@@ -47,6 +47,7 @@
 
 :root {
   --radius: 0.65rem;
+  --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
   --background: oklch(1 0 0);
   --foreground: oklch(0.141 0.005 285.823);
   --card: oklch(1 0 0);
@@ -122,4 +123,85 @@
   body {
     @apply bg-background text-foreground;
     }
+}
+
+@layer utilities {
+  @keyframes aurora-flow {
+    0% {
+      transform: translate3d(-12%, -8%, 0) scale(0.95);
+    }
+    50% {
+      transform: translate3d(8%, 6%, 0) scale(1.05);
+    }
+    100% {
+      transform: translate3d(-4%, 4%, 0) scale(0.98);
+    }
+  }
+
+  @keyframes drift-slow {
+    0% {
+      transform: translate3d(0, 0, 0) scale(1);
+    }
+    50% {
+      transform: translate3d(6%, -4%, 0) scale(1.06);
+    }
+    100% {
+      transform: translate3d(-4%, 4%, 0) scale(0.98);
+    }
+  }
+
+  @keyframes float-soft {
+    0% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(-14px);
+    }
+    100% {
+      transform: translateY(0px);
+    }
+  }
+
+  @keyframes card-enter {
+    0% {
+      opacity: 0;
+      transform: translateY(12px) scale(0.98);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  .animate-aurora {
+    animation: aurora-flow 22s ease-in-out infinite alternate;
+  }
+
+  .animate-drift-slow {
+    animation: drift-slow 28s ease-in-out infinite alternate;
+  }
+
+  .animate-float-soft {
+    animation: float-soft 14s ease-in-out infinite;
+  }
+
+  .animate-card-enter {
+    animation: card-enter 420ms var(--ease-out-quart) both;
+  }
+
+  .bg-grid-mask {
+    background-image:
+      linear-gradient(
+        to right,
+        rgba(14, 165, 233, 0.08) 1px,
+        transparent 1px
+      ),
+      linear-gradient(
+        to bottom,
+        rgba(14, 165, 233, 0.08) 1px,
+        transparent 1px
+      );
+    background-size: 42px 42px;
+    mask-image: radial-gradient(circle at center, #000 25%, transparent 70%);
+  }
 }
