@@ -5,7 +5,7 @@ import { BrowserRouter } from 'react-router'
 import { ReactQueryProvider } from '@/providers/react-query'
 
 import './index.css'
-import App from './App.tsx'
+import App from '@/app/App.tsx'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

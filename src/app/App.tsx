@@ -2,9 +2,8 @@ import { Route, Routes } from 'react-router'
 
 import { SignInPage } from '@/pages/auth/sign-in/SignInPage'
 import { SignUpPage } from '@/pages/auth/sign-up/SignUpPage'
+import { DashboardPage } from '@/pages/dashboard/DashboardPage'
 import { APP_ROUTES } from '@/shared/config/routes'
-
-const DashboardPage = () => <p>Dashboard</p>
 
 export function App() {
   return (
