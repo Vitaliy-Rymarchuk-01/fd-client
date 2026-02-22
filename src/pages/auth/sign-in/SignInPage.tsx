@@ -1,5 +1,6 @@
 import { Link } from 'react-router'
 
+import { SignInForm } from '@/features/auth/sign-in'
 import { APP_ROUTES } from '@/shared/config/routes'
 import { Button } from '@/shared/components/ui/button'
 import {
@@ -10,8 +11,6 @@ import {
   CardHeader,
   CardTitle,
 } from '@/shared/components/ui/card'
-import { Input } from '@/shared/components/ui/input'
-import { Label } from '@/shared/components/ui/label'
 import { Separator } from '@/shared/components/ui/separator'
 
 export function SignInPage() {
@@ -77,62 +76,18 @@ export function SignInPage() {
                 </CardHeader>
 
                 <CardContent>
-                  <form className="grid gap-5">
-                    <div className="grid gap-2">
-                      <Label htmlFor="email">Email</Label>
-                      <Input
-                        id="email"
-                        name="email"
-                        type="email"
-                        placeholder="name@example.com"
-                        autoComplete="email"
-                      />
+                  <SignInForm />
+
+                  <div className="relative mt-5">
+                    <div className="absolute inset-0 flex items-center">
+                      <Separator />
                     </div>
-
-                    <div className="grid gap-2">
-                      <div className="flex items-center justify-between">
-                        <Label htmlFor="password">Password</Label>
-                        <Button
-                          variant="link"
-                          size="xs"
-                          className="h-auto px-0 text-muted-foreground"
-                          type="button"
-                        >
-                          Forgot password?
-                        </Button>
-                      </div>
-                      <Input
-                        id="password"
-                        name="password"
-                        type="password"
-                        placeholder="••••••••"
-                        autoComplete="current-password"
-                      />
+                    <div className="relative flex justify-center text-xs">
+                      <span className="bg-card px-2 text-muted-foreground">
+                        or
+                      </span>
                     </div>
-
-                    <Button className="w-full" type="button">
-                      Sign in
-                    </Button>
-
-                    <div className="relative">
-                      <div className="absolute inset-0 flex items-center">
-                        <Separator />
-                      </div>
-                      <div className="relative flex justify-center text-xs">
-                        <span className="bg-card px-2 text-muted-foreground">
-                          or
-                        </span>
-                      </div>
-                    </div>
-
-                    <Button
-                      className="w-full transition-transform duration-300 hover:-translate-y-0.5"
-                      variant="outline"
-                      type="button"
-                    >
-                      Continue with Google
-                    </Button>
-                  </form>
+                  </div>
                 </CardContent>
 
                 <CardFooter className="justify-center">

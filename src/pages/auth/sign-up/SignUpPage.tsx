@@ -1,5 +1,6 @@
 import { Link } from 'react-router'
 
+import { SignUpForm } from '@/features/auth/sign-up'
 import { APP_ROUTES } from '@/shared/config/routes'
 import { Button } from '@/shared/components/ui/button'
 import {
@@ -10,8 +11,6 @@ import {
   CardHeader,
   CardTitle,
 } from '@/shared/components/ui/card'
-import { Input } from '@/shared/components/ui/input'
-import { Label } from '@/shared/components/ui/label'
 import { Separator } from '@/shared/components/ui/separator'
 
 export function SignUpPage() {
@@ -93,74 +92,18 @@ export function SignUpPage() {
                 </CardHeader>
 
                 <CardContent>
-                  <form className="grid gap-5">
-                    <div className="grid gap-2">
-                      <Label htmlFor="name">Full name</Label>
-                      <Input
-                        id="name"
-                        name="name"
-                        type="text"
-                        placeholder="Your name"
-                        autoComplete="name"
-                      />
+                  <SignUpForm />
+
+                  <div className="relative mt-5">
+                    <div className="absolute inset-0 flex items-center">
+                      <Separator />
                     </div>
-
-                    <div className="grid gap-2">
-                      <Label htmlFor="email">Email</Label>
-                      <Input
-                        id="email"
-                        name="email"
-                        type="email"
-                        placeholder="name@example.com"
-                        autoComplete="email"
-                      />
+                    <div className="relative flex justify-center text-xs">
+                      <span className="bg-card px-2 text-muted-foreground">
+                        or
+                      </span>
                     </div>
-
-                    <div className="grid gap-2">
-                      <Label htmlFor="password">Password</Label>
-                      <Input
-                        id="password"
-                        name="password"
-                        type="password"
-                        placeholder="Create a password"
-                        autoComplete="new-password"
-                      />
-                    </div>
-
-                    <div className="grid gap-2">
-                      <Label htmlFor="confirmPassword">Confirm password</Label>
-                      <Input
-                        id="confirmPassword"
-                        name="confirmPassword"
-                        type="password"
-                        placeholder="Repeat your password"
-                        autoComplete="new-password"
-                      />
-                    </div>
-
-                    <Button className="w-full" type="button">
-                      Create account
-                    </Button>
-
-                    <div className="relative">
-                      <div className="absolute inset-0 flex items-center">
-                        <Separator />
-                      </div>
-                      <div className="relative flex justify-center text-xs">
-                        <span className="bg-card px-2 text-muted-foreground">
-                          or
-                        </span>
-                      </div>
-                    </div>
-
-                    <Button
-                      className="w-full transition-transform duration-300 hover:-translate-y-0.5"
-                      variant="outline"
-                      type="button"
-                    >
-                      Sign up with Google
-                    </Button>
-                  </form>
+                  </div>
                 </CardContent>
 
                 <CardFooter className="justify-center">
