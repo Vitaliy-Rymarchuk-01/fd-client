@@ -1,6 +1,9 @@
-import { zodResolver } from '@hookform/resolvers/zod'
-import { useForm } from 'react-hook-form'
 import { useNavigate } from 'react-router'
+
+import { useForm } from 'react-hook-form'
+
+import { zodResolver } from '@hookform/resolvers/zod'
+
 import { toast } from 'sonner'
 
 import { Button } from '@/shared/components/ui/button'
@@ -9,7 +12,7 @@ import { Label } from '@/shared/components/ui/label'
 import { APP_ROUTES } from '@/shared/config/routes'
 
 import { useSignUpMutation } from '../hooks/use-sign-up-mutation'
-import { signUpSchema, type SignUpFormValues } from '../types/schema'
+import { type SignUpFormValues, signUpSchema } from '../types/schema'
 
 export function SignUpForm() {
   const navigate = useNavigate()
@@ -60,7 +63,7 @@ export function SignUpForm() {
           {...register('name')}
         />
         {errors.name?.message ? (
-          <p className="text-sm text-destructive">{errors.name.message}</p>
+          <p className="text-destructive text-sm">{errors.name.message}</p>
         ) : null}
       </div>
 
@@ -75,7 +78,7 @@ export function SignUpForm() {
           {...register('email')}
         />
         {errors.email?.message ? (
-          <p className="text-sm text-destructive">{errors.email.message}</p>
+          <p className="text-destructive text-sm">{errors.email.message}</p>
         ) : null}
       </div>
 
@@ -90,7 +93,7 @@ export function SignUpForm() {
           {...register('password')}
         />
         {errors.password?.message ? (
-          <p className="text-sm text-destructive">{errors.password.message}</p>
+          <p className="text-destructive text-sm">{errors.password.message}</p>
         ) : null}
       </div>
 
@@ -105,11 +108,17 @@ export function SignUpForm() {
           {...register('confirmPassword')}
         />
         {errors.confirmPassword?.message ? (
-          <p className="text-sm text-destructive">{errors.confirmPassword.message}</p>
+          <p className="text-destructive text-sm">
+            {errors.confirmPassword.message}
+          </p>
         ) : null}
       </div>
 
-      <Button className="w-full" type="submit" disabled={signUpMutation.isPending}>
+      <Button
+        className="w-full"
+        type="submit"
+        disabled={signUpMutation.isPending}
+      >
         Create account
       </Button>
 

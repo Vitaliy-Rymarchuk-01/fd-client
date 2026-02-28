@@ -1,0 +1,30 @@
+{
+  "semi": false,
+  "singleQuote": true,
+  "trailingComma": "all",
+  "endOfLine": "lf",
+  "plugins": [
+    "@trivago/prettier-plugin-sort-imports",
+    "prettier-plugin-tailwindcss"
+  ],
+  "tailwindFunctions": ["cn"],
+  "importOrder": [
+    "^react$",
+    "^react/(.*)$",
+    "^react-router$",
+    "^react-hook-form$",
+    "^@hookform/(.*)$",
+    "^@tanstack/(.*)$",
+    "^@?\\w",
+    "^@/app(/.*)?$",
+    "^@/providers(/.*)?$",
+    "^@/pages(/.*)?$",
+    "^@/features(/.*)?$",
+    "^@/shared(/.*)?$",
+    "^@/assets(/.*)?$",
+    "^[./]"
+  ],
+  "importOrderParserPlugins": ["typescript", "jsx"],
+  "importOrderSeparation": true,
+  "importOrderSortSpecifiers": true
+}
