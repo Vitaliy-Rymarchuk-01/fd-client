@@ -1,6 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { useNavigate } from 'react-router'
+import { toast } from 'sonner'
 
 import { Button } from '@/shared/components/ui/button'
 import { Input } from '@/shared/components/ui/input'
@@ -38,6 +39,9 @@ export function SignUpForm() {
       {
         onSuccess: () => {
           navigate(APP_ROUTES.dashboard)
+        },
+        onError: (error) => {
+          toast.error(error.message || 'Failed to sign up')
         },
       },
     )
@@ -104,10 +108,6 @@ export function SignUpForm() {
           <p className="text-sm text-destructive">{errors.confirmPassword.message}</p>
         ) : null}
       </div>
-
-      {signUpMutation.error?.message ? (
-        <p className="text-sm text-destructive">{signUpMutation.error.message}</p>
-      ) : null}
 
       <Button className="w-full" type="submit" disabled={signUpMutation.isPending}>
         Create account

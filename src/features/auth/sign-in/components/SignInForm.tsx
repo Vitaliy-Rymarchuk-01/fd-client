@@ -1,6 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { useNavigate } from 'react-router'
+import { toast } from 'sonner'
 
 import { Button } from '@/shared/components/ui/button'
 import { Input } from '@/shared/components/ui/input'
@@ -30,6 +31,9 @@ export function SignInForm() {
     signInMutation.mutate(values, {
       onSuccess: () => {
         navigate(APP_ROUTES.dashboard)
+      },
+      onError: (error) => {
+        toast.error(error.message || 'Failed to sign in')
       },
     })
   })
@@ -65,10 +69,6 @@ export function SignInForm() {
           <p className="text-sm text-destructive">{errors.password.message}</p>
         ) : null}
       </div>
-
-      {signInMutation.error?.message ? (
-        <p className="text-sm text-destructive">{signInMutation.error.message}</p>
-      ) : null}
 
       <Button className="w-full" type="submit" disabled={signInMutation.isPending}>
         Sign in
