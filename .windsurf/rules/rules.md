@@ -6,16 +6,22 @@ description: Repository-wide Winsurf rules for fd-client (Feature-Based Architec
 # fd-client Repository Rules (Feature-Based)
 
 ## 1. Comments
+
 - Write comments only in English and only when they add non-obvious context (complex business logic, edge-case handling, reasoning that cannot be inferred from code).
 - Prefer self-documenting code (clear naming, small pure functions, extracted helpers) over redundant comments.
 
 ## 2. TypeScript Discipline
+
 - `strict` mode must remain enabled at all times.
 - Avoid `any`, unsafe type assertions, or widening types. If unavoidable, document the reason in a short English comment.
 - Model remote DTOs and domain entities explicitly using colocated `types/` inside each feature.
-- Re-export reusable types via `index.ts` to avoid duplication and drift.
+- `types/` and `utils/` folders are the standard place for a feature’s type definitions and pure helpers.
+- Inside `types/` and `utils/`, files must be named by purpose (e.g. `import.ts`, `stag.ts`, `parsing.ts`).
+- Do not use generic filenames like `types.ts` or `utils.ts`.
+- Re-export reusable types via a single feature-level `index.ts` to avoid duplication and drift.
 
 ## 3. Architecture Philosophy
+
 This project follows a **Feature-Based Architecture**.
 
 - Features are vertical domain modules grouped by business capability.
@@ -24,10 +30,12 @@ This project follows a **Feature-Based Architecture**.
 - Each feature owns its UI, API logic, hooks, and types.
 
 Dependency direction:
+
 - Features may depend on `shared/`
 - Features must not implicitly couple to other features without explicit intent
 
 ## 4. API Layer
+
 - All HTTP calls must go through a single Axios instance located in `shared/api`.
 - Use minimal helpers (`api.get`, `api.post`, etc.).
 - Do not use inline `try/catch` in features — error handling is delegated to TanStack Query.
@@ -35,6 +43,7 @@ Dependency direction:
 - Never return raw Axios responses outside the API layer.
 
 ## 5. Data Fetching & Side Effects
+
 - Use TanStack Query for all server state.
   - Queries for reads
   - Mutations for writes
@@ -43,34 +52,45 @@ Dependency direction:
 - Query keys and hook factories must live inside the feature that owns the data.
 
 ## 6. Forms & Validation
+
 - All forms must use React Hook Form.
 - Every form must have a colocated Zod schema.
 - Integrate validation using `zodResolver`.
 - Avoid duplicating form state with `useState` unless there is a justified performance need.
 
 ## 7. State Management
+
 - Prefer composition over props drilling.
 - Shared cross-feature state must use a dedicated Zustand store.
 - Stores must expose typed selectors/hooks.
 - Do not expose raw `set` references outside the store module.
 
 ## 8. UI & Styling
+
 - Use Shadcn UI as the baseline component system.
 - Extend variants via `cva` or equivalent — do not create ad-hoc styling forks.
 - Centralize theme tokens inside `shared/ui`.
 - Avoid global CSS overrides.
 
+## 8.1 Shadcn UI generation (STRICT)
+
+- Never create or edit `src/shared/components/ui/*` shadcn components manually.
+- Always add/update UI components only via shadcn CLI commands, e.g. `bunx --bun shadcn@latest add <component>`.
+
 ## 9. Tooling & Formatting
+
 - Prettier must run before every commit.
 - ESLint must pass without disabling rules.
 - Import sorting must remain enabled.
 - Do not bypass Git hooks that enforce formatting and linting.
 
 ## 10. Testing & Quality (Recommended)
+
 - Test critical business logic (mappers, selectors, custom hooks) with Vitest.
 - Prefer behavioral tests with Testing Library over snapshot-heavy testing.
 
 # Feature-Based Folder Structure
+
 ```
 src/
 ├── app/ # App shell, routing, global setup
@@ -83,6 +103,7 @@ src/
 │ ├── api/ # Query/mutation factories and mappers
 │ ├── store/ # Feature-local Zustand store (if required)
 │ ├── types/ # DTOs and domain types
+│ ├── utils/ # Feature-local pure helpers
 │ └── index.ts # Public feature API
 ├── shared/ # Cross-cutting utilities, api base, ui primitives
 ├── assets/ # Static assets

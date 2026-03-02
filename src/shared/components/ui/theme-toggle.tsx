@@ -1,6 +1,6 @@
 import { Moon, Sun } from 'lucide-react'
 
-import { useTheme } from '@/providers/theme/useTheme'
+import { useTheme } from '@/shared/hooks/use-theme'
 
 import { Button } from './button'
 

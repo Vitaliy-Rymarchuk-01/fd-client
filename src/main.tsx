@@ -7,7 +7,7 @@ import { createRoot } from 'react-dom/client'
 import App from '@/app/App.tsx'
 
 import { ReactQueryProvider } from '@/providers/react-query'
-import { ThemeProvider } from '@/providers/theme/ThemeProvider'
+import { ThemeProvider } from '@/providers/theme-provider'
 
 import { Toaster } from '@/shared/components/ui/sonner'
 
