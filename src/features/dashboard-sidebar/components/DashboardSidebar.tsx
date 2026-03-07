@@ -1,12 +1,13 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 
+import { useUploadFiles, useWellsStages } from '@/features/data-import'
 import type { ImportFileItem } from '@/features/data-import/types/file-import'
 
 import { ScrollArea } from '@/shared/components/ui/scroll-area'
 
 import type { ModuleGroup, ModuleId } from '../types/module'
 import type { StageNode } from '../types/stage'
-import { createId, extractWellStage } from '../utils/import-parsing'
+import { createId } from '../utils/import-parsing'
 import { MainDataSection } from './MainDataSection'
 import { ModuleDropdown } from './ModuleDropdown'
 
@@ -39,45 +40,113 @@ const MODULE_GROUPS: ReadonlyArray<ModuleGroup> = [
 
 export function DashboardSidebar() {
   const [importItems, setImportItems] = useState<ImportFileItem[]>([])
-  const [stageNodes, setStageNodes] = useState<StageNode[]>([])
   const [activeModuleId, setActiveModuleId] = useState<ModuleId>('main-data')
+  const [batchId, setBatchId] = useState<string | null>(null)
+  const [serverStageIdByLocalFileId, setServerStageIdByLocalFileId] = useState<
+    Record<string, string>
+  >({})
+  const [excludedServerStageIds, setExcludedServerStageIds] = useState<
+    Record<string, boolean>
+  >({})
   const [selectedStageIds, setSelectedStageIds] = useState<
     Record<string, boolean>
   >({})
 
+  const uploadFilesMutation = useUploadFiles()
+  const wellsStagesQuery = useWellsStages(batchId)
+
+  const stageNodes: StageNode[] = useMemo(() => {
+    if (!wellsStagesQuery.data) return []
+
+    return wellsStagesQuery.data.wells
+      .flatMap((well) =>
+        well.stages.map((stage) => ({
+          id: stage.id,
+          fileId: stage.id,
+          wellName: well.name,
+          stageName: stage.name,
+          fileName: stage.fileName,
+          status: 'ready' as const,
+        })),
+      )
+      .filter((node) => !excludedServerStageIds[node.id])
+  }, [excludedServerStageIds, wellsStagesQuery.data])
+
   const isMainDataEmpty =
     activeModuleId === 'main-data' && stageNodes.length === 0
 
-  const handleFilesAdded = (files: File[]) => {
-    const newItems: ImportFileItem[] = []
-    const newStageNodes: StageNode[] = []
-
-    files.forEach((file) => {
-      const fileId = createId()
-      const { wellName, stageName } = extractWellStage(file.name)
-
-      newItems.push({ id: fileId, file, status: 'queued' })
-      newStageNodes.push({
-        id: createId(),
-        fileId,
-        wellName,
-        stageName,
-        fileName: file.name,
-        status: 'pending',
-      })
+  const handleFilesAdded = async (files: File[]) => {
+    const localIdByFileName: Record<string, string> = {}
+    const newItems: ImportFileItem[] = files.map((file) => {
+      const localId = createId()
+      localIdByFileName[file.name] = localId
+      return { id: localId, file, status: 'uploading' }
     })
 
     setImportItems((prev) => [...prev, ...newItems])
-    setStageNodes((prev) => [...prev, ...newStageNodes])
+
+    try {
+      const res = await uploadFilesMutation.mutateAsync({
+        files,
+        batchId: batchId ?? undefined,
+      })
+
+      const nextBatchId = res.batchId
+      setBatchId(nextBatchId)
+      if (batchId) {
+        void wellsStagesQuery.refetch()
+      }
+
+      setServerStageIdByLocalFileId((prev) => {
+        const next = { ...prev }
+        res.files.forEach((uploaded) => {
+          const localId = localIdByFileName[uploaded.fileName]
+          if (localId) {
+            next[localId] = uploaded.fileId
+          }
+        })
+        return next
+      })
+
+      setImportItems((prev) =>
+        prev.map((item) => {
+          const isUploadedNow =
+            localIdByFileName[item.file.name] === item.id &&
+            files.some((f) => f.name === item.file.name)
+          if (!isUploadedNow) return item
+          return { ...item, status: 'uploaded' }
+        }),
+      )
+    } catch {
+      setImportItems((prev) =>
+        prev.map((item) => {
+          const isUploadedNow =
+            localIdByFileName[item.file.name] === item.id &&
+            files.some((f) => f.name === item.file.name)
+          if (!isUploadedNow) return item
+
+          return {
+            ...item,
+            status: 'error',
+            errorMessage: 'Upload failed',
+          }
+        }),
+      )
+    }
   }
 
   const handleRemoveItem = (fileId: string) => {
     setImportItems((prev) => prev.filter((item) => item.id !== fileId))
-    setStageNodes((prev) => prev.filter((node) => node.fileId !== fileId))
+
+    const serverStageId = serverStageIdByLocalFileId[fileId]
+    if (serverStageId) {
+      setExcludedServerStageIds((prev) => ({ ...prev, [serverStageId]: true }))
+    }
+
     setSelectedStageIds((prev) => {
       const next: Record<string, boolean> = {}
       stageNodes.forEach((node) => {
-        if (node.fileId !== fileId && prev[node.id]) {
+        if (node.id !== serverStageId && prev[node.id]) {
           next[node.id] = true
         }
       })
@@ -87,7 +156,9 @@ export function DashboardSidebar() {
 
   const handleClear = () => {
     setImportItems([])
-    setStageNodes([])
+    setBatchId(null)
+    setServerStageIdByLocalFileId({})
+    setExcludedServerStageIds({})
     setSelectedStageIds({})
   }
 

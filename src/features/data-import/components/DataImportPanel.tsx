@@ -154,7 +154,13 @@ export function DataImportPanel({
                     {item.file.name}
                   </p>
                   <p className="text-muted-foreground text-xs">
-                    {item.status === 'error' ? item.errorMessage : 'Queued'}
+                    {item.status === 'error'
+                      ? item.errorMessage
+                      : item.status === 'uploading'
+                        ? 'Uploading'
+                        : item.status === 'uploaded'
+                          ? 'Uploaded'
+                          : 'Queued'}
                   </p>
                 </div>
                 <Button

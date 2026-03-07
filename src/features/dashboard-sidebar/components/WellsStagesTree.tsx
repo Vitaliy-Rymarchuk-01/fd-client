@@ -45,7 +45,7 @@ export function WellsStagesTree({
                 <div className="flex items-center gap-2 text-sm font-semibold">
                   <span className="truncate">{wellName}</span>
                 </div>
-                <div className="pl-4">
+                <div className="pl-2">
                   {sorted.map((node) => (
                     <label
                       key={node.id}
