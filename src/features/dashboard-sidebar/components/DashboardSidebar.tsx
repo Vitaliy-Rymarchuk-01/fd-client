@@ -1,15 +1,71 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
+import { BreakdownsPanel } from '@/features/breakdowns'
 import { useUploadFiles, useWellsStages } from '@/features/data-import'
 import type { ImportFileItem } from '@/features/data-import/types/file-import'
 
 import { ScrollArea } from '@/shared/components/ui/scroll-area'
+import { useStageSelectionStore } from '@/shared/store/stage-selection'
 
 import type { ModuleGroup, ModuleId } from '../types/module'
 import type { StageNode } from '../types/stage'
 import { createId } from '../utils/import-parsing'
 import { MainDataSection } from './MainDataSection'
 import { ModuleDropdown } from './ModuleDropdown'
+
+const SIDEBAR_STORAGE_KEY = 'fd.sidebar:imports'
+
+function loadSidebarState(): {
+  batchId: string | null
+  excludedStageIds: Record<string, boolean>
+  selectedStageIds: Record<string, boolean>
+} {
+  if (typeof window === 'undefined') {
+    return {
+      batchId: null,
+      excludedStageIds: {},
+      selectedStageIds: {},
+    }
+  }
+
+  try {
+    const raw = window.localStorage.getItem(SIDEBAR_STORAGE_KEY)
+    if (!raw) {
+      return {
+        batchId: null,
+        excludedStageIds: {},
+        selectedStageIds: {},
+      }
+    }
+
+    const parsed = JSON.parse(raw) as {
+      batchId: string | null
+      excludedStageIds?: Record<string, boolean>
+      selectedStageIds?: Record<string, boolean>
+    } | null
+
+    if (!parsed) {
+      return {
+        batchId: null,
+        excludedStageIds: {},
+        selectedStageIds: {},
+      }
+    }
+
+    return {
+      batchId: parsed.batchId ?? null,
+      excludedStageIds: parsed.excludedStageIds ?? {},
+      // після reload жоден stage не має бути активним
+      selectedStageIds: {},
+    }
+  } catch {
+    return {
+      batchId: null,
+      excludedStageIds: {},
+      selectedStageIds: {},
+    }
+  }
+}
 
 const MODULE_GROUPS: ReadonlyArray<ModuleGroup> = [
   {
@@ -41,19 +97,43 @@ const MODULE_GROUPS: ReadonlyArray<ModuleGroup> = [
 export function DashboardSidebar() {
   const [importItems, setImportItems] = useState<ImportFileItem[]>([])
   const [activeModuleId, setActiveModuleId] = useState<ModuleId>('main-data')
-  const [batchId, setBatchId] = useState<string | null>(null)
+  const [
+    {
+      batchId: initialBatchId,
+      excludedStageIds: initialExcludedIds,
+      selectedStageIds: initialSelectedIds,
+    },
+  ] = useState(loadSidebarState)
+
+  const [batchId, setBatchId] = useState<string | null>(initialBatchId)
   const [serverStageIdByLocalFileId, setServerStageIdByLocalFileId] = useState<
     Record<string, string>
   >({})
-  const [excludedServerStageIds, setExcludedServerStageIds] = useState<
-    Record<string, boolean>
-  >({})
-  const [selectedStageIds, setSelectedStageIds] = useState<
-    Record<string, boolean>
-  >({})
+  const [excludedServerStageIds, setExcludedServerStageIds] =
+    useState<Record<string, boolean>>(initialExcludedIds)
+  const [selectedStageIds, setSelectedStageIds] =
+    useState<Record<string, boolean>>(initialSelectedIds)
+
+  const selectedStageId = useStageSelectionStore((s) => s.selectedStageId)
+  const setSelectedStageId = useStageSelectionStore((s) => s.setSelectedStageId)
 
   const uploadFilesMutation = useUploadFiles()
   const wellsStagesQuery = useWellsStages(batchId)
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    try {
+      const payload = {
+        batchId,
+        excludedStageIds: excludedServerStageIds,
+        selectedStageIds,
+      }
+      window.localStorage.setItem(SIDEBAR_STORAGE_KEY, JSON.stringify(payload))
+    } catch {
+      // ignore quota / JSON errors
+    }
+  }, [batchId, excludedServerStageIds, selectedStageIds])
 
   const stageNodes: StageNode[] = useMemo(() => {
     if (!wellsStagesQuery.data) return []
@@ -167,11 +247,12 @@ export function DashboardSidebar() {
       ...prev,
       [stageId]: checked,
     }))
+    setSelectedStageId(checked ? stageId : null)
   }
 
   return (
     <nav className="flex h-full flex-col">
-      <div className="border-sidebar-border bg-sidebar/60 supports-backdrop-filter:bg-sidebar/40 border-b p-2 backdrop-blur">
+      <div className="border-sidebar-border bg-sidebar/60 supports-backdrop-filter:bg-sidebar/40 h-12.5 border-b p-2 backdrop-blur">
         <ModuleDropdown
           activeModuleId={activeModuleId}
           moduleGroups={MODULE_GROUPS}
@@ -206,6 +287,14 @@ export function DashboardSidebar() {
                 onClearAll={handleClear}
                 onToggleStage={handleToggleStage}
               />
+            ) : activeModuleId === 'breakdowns' ? (
+              selectedStageId ? (
+                <BreakdownsPanel stageId={selectedStageId} />
+              ) : (
+                <section className="border-sidebar-border/70 text-muted-foreground rounded-xl border px-3 py-3 text-xs">
+                  Select a stage to detect breakdowns.
+                </section>
+              )
             ) : (
               <section className="border-sidebar-border/70 text-muted-foreground rounded-xl border px-3 py-3 text-xs">
                 Module — controls will be implemented here.

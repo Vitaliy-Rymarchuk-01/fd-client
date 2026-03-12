@@ -3,9 +3,10 @@ import type { ReactNode } from 'react'
 
 import { Menu } from 'lucide-react'
 
+import { DashboardSidebar } from '@/features/dashboard-sidebar'
+
 import { AppHeader } from '@/shared/components/layout/AppHeader'
 import { AppSidebar } from '@/shared/components/layout/AppSidebar'
-import { DashboardSidebar } from '@/features/dashboard-sidebar'
 import { Button } from '@/shared/components/ui/button'
 import { cn } from '@/shared/lib/utils'
 
@@ -18,7 +19,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const [appSidebarExpanded, setAppSidebarExpanded] = useState(false)
 
   return (
-    <div className="bg-background text-foreground flex min-h-dvh flex-col">
+    <div className="bg-background text-foreground flex h-dvh flex-col overflow-hidden">
       {mobileNavOpen ? (
         <div className="fixed inset-0 z-50 md:hidden">
           <div
@@ -53,7 +54,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         </div>
       </div>
 
-      <div className="flex min-h-0 flex-1">
+      <div className="flex min-h-0 flex-1 overflow-hidden">
         <div
           className="border-sidebar-border bg-sidebar text-sidebar-foreground relative hidden w-14 border-r md:block"
           onBlurCapture={() => setAppSidebarExpanded(false)}
@@ -82,7 +83,9 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           <DashboardSidebar />
         </div>
 
-        <main className="flex min-h-0 min-w-0 flex-1 flex-col p-6 md:p-10">{children}</main>
+        <main className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+          {children}
+        </main>
       </div>
     </div>
   )
