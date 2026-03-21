@@ -234,14 +234,18 @@ export function DashboardSidebar() {
     setServerStageIdByLocalFileId({})
     setExcludedServerStageIds({})
     setSelectedStageIds({})
+    setSelectedStageId(null)
   }
 
   const handleToggleStage = (stageId: string, checked: boolean) => {
-    setSelectedStageIds((prev) => ({
-      ...prev,
-      [stageId]: checked,
-    }))
-    setSelectedStageId(checked ? stageId : null)
+    if (!checked) {
+      setSelectedStageIds({})
+      setSelectedStageId(null)
+      return
+    }
+
+    setSelectedStageIds({ [stageId]: true })
+    setSelectedStageId(stageId)
   }
 
   return (
