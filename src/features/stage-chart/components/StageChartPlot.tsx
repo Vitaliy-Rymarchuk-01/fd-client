@@ -20,13 +20,6 @@ type Margin = {
   left: number
 }
 
-type BreakdownsOverlay = {
-  startIndex: number
-  endIndex: number
-  isTooSmall: boolean
-  isLarge: boolean
-}
-
 type SelectionBox = {
   x: number
   y: number
@@ -56,8 +49,6 @@ type Props = {
   showSlurryRate: boolean
   showPropCon: boolean
   showWellBorePropMass: boolean
-
-  breakdowns: BreakdownsOverlay[]
 
   xScale: ScaleLinear<number, number>
   pressureScale: ScaleLinear<number, number>
@@ -108,7 +99,6 @@ export function StageChartPlot(props: Props) {
     showSlurryRate,
     showPropCon,
     showWellBorePropMass,
-    breakdowns,
     xScale,
     pressureScale,
     slurryScale,
@@ -133,8 +123,6 @@ export function StageChartPlot(props: Props) {
     onHoverMove,
     overlayRef,
   } = props
-
-  const overlayStroke = 'rgba(15, 23, 42, 0.25)'
 
   const treatingColor = '#ef4444'
   const bhColor = '#22c55e'
@@ -200,39 +188,6 @@ export function StageChartPlot(props: Props) {
             stroke={gridColor}
             strokeOpacity={1}
           />
-
-          {breakdowns.map((br) => {
-            if (
-              br.startIndex < 0 ||
-              br.endIndex < 0 ||
-              br.startIndex >= seconds.length ||
-              br.endIndex >= seconds.length
-            ) {
-              return null
-            }
-
-            const x1 = xScale(seconds[br.startIndex] ?? 0) ?? 0
-            const x2 = xScale(seconds[br.endIndex] ?? 0) ?? 0
-
-            const fill = br.isTooSmall
-              ? 'rgba(34,197,94,0.18)'
-              : br.isLarge
-                ? 'rgba(239,68,68,0.22)'
-                : 'rgba(59,130,246,0.18)'
-
-            return (
-              <rect
-                key={`${br.startIndex}-${br.endIndex}`}
-                x={Math.min(x1, x2)}
-                y={0}
-                width={Math.max(1, Math.abs(x2 - x1))}
-                height={innerHeight}
-                fill={fill}
-                stroke={overlayStroke}
-                strokeWidth={0.5}
-              />
-            )
-          })}
 
           {selectionBox && selectionBox.w > 0 && selectionBox.h > 0 ? (
             <rect

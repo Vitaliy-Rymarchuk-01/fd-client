@@ -1,4 +1,3 @@
-import { Button } from '@/shared/components/ui/button'
 import { Checkbox } from '@/shared/components/ui/checkbox'
 
 type Props = {
@@ -13,9 +12,6 @@ type Props = {
   setShowPropCon: (next: boolean) => void
   showWellBorePropMass: boolean
   setShowWellBorePropMass: (next: boolean) => void
-  disableDetect: boolean
-  onDetectA: () => void
-  onDetectB: () => void
 }
 
 export function StageChartHeader(props: Props) {
@@ -103,25 +99,7 @@ export function StageChartHeader(props: Props) {
           </label>
         </div>
 
-        <div className="flex items-center gap-2">
-          <Button
-            variant="secondary"
-            size="xs"
-            disabled={props.disableDetect}
-            onClick={props.onDetectA}
-          >
-            Detect A
-          </Button>
-
-          <Button
-            variant="secondary"
-            size="xs"
-            disabled={props.disableDetect}
-            onClick={props.onDetectB}
-          >
-            Detect B
-          </Button>
-        </div>
+        <div className="flex items-center gap-2" />
       </div>
     </div>
   )

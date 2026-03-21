@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
 
-import { BreakdownsPanel } from '@/features/breakdowns'
 import { useUploadFiles, useWellsStages } from '@/features/data-import'
 import type { ImportFileItem } from '@/features/data-import/types/file-import'
 
@@ -73,11 +72,7 @@ const MODULE_GROUPS: ReadonlyArray<ModuleGroup> = [
     items: [
       { id: 'main-data', label: 'Main Data' },
       { id: 'input-data', label: 'Input data' },
-      { id: 'phases', label: 'Phases' },
       { id: 'vols', label: 'Vols' },
-      { id: 'breakdowns', label: 'Breakdowns' },
-      { id: 'filter-bds', label: 'Filter BDs' },
-      { id: 'separate-bds', label: 'Separate BDs' },
       { id: 'permeability', label: 'Permeability' },
       { id: 'curves', label: 'Curves' },
     ],
@@ -114,7 +109,6 @@ export function DashboardSidebar() {
   const [selectedStageIds, setSelectedStageIds] =
     useState<Record<string, boolean>>(initialSelectedIds)
 
-  const selectedStageId = useStageSelectionStore((s) => s.selectedStageId)
   const setSelectedStageId = useStageSelectionStore((s) => s.setSelectedStageId)
 
   const uploadFilesMutation = useUploadFiles()
@@ -260,24 +254,10 @@ export function DashboardSidebar() {
         />
       </div>
 
-      {isMainDataEmpty ? (
+      <ScrollArea className="min-h-0 flex-1">
         <div className="flex min-h-0 flex-1 flex-col p-4">
-          <div className="flex min-h-0 flex-1 flex-col">
-            <MainDataSection
-              importItems={importItems}
-              stageNodes={stageNodes}
-              selectedStageIds={selectedStageIds}
-              onFilesAdded={handleFilesAdded}
-              onRemoveImportItem={handleRemoveItem}
-              onClearAll={handleClear}
-              onToggleStage={handleToggleStage}
-            />
-          </div>
-        </div>
-      ) : (
-        <ScrollArea className="min-h-0 flex-1">
-          <div className="flex h-full min-h-0 flex-col p-4">
-            {activeModuleId === 'main-data' ? (
+          {isMainDataEmpty ? (
+            <div className="flex min-h-0 flex-1 flex-col">
               <MainDataSection
                 importItems={importItems}
                 stageNodes={stageNodes}
@@ -287,22 +267,24 @@ export function DashboardSidebar() {
                 onClearAll={handleClear}
                 onToggleStage={handleToggleStage}
               />
-            ) : activeModuleId === 'breakdowns' ? (
-              selectedStageId ? (
-                <BreakdownsPanel stageId={selectedStageId} />
-              ) : (
-                <section className="border-sidebar-border/70 text-muted-foreground rounded-xl border px-3 py-3 text-xs">
-                  Select a stage to detect breakdowns.
-                </section>
-              )
-            ) : (
-              <section className="border-sidebar-border/70 text-muted-foreground rounded-xl border px-3 py-3 text-xs">
-                Module — controls will be implemented here.
-              </section>
-            )}
-          </div>
-        </ScrollArea>
-      )}
+            </div>
+          ) : activeModuleId === 'main-data' ? (
+            <MainDataSection
+              importItems={importItems}
+              stageNodes={stageNodes}
+              selectedStageIds={selectedStageIds}
+              onFilesAdded={handleFilesAdded}
+              onRemoveImportItem={handleRemoveItem}
+              onClearAll={handleClear}
+              onToggleStage={handleToggleStage}
+            />
+          ) : (
+            <section className="border-sidebar-border/70 text-muted-foreground rounded-xl border px-3 py-3 text-xs">
+              Module — controls will be implemented here.
+            </section>
+          )}
+        </div>
+      </ScrollArea>
     </nav>
   )
 }

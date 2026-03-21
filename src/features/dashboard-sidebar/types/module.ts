@@ -1,11 +1,7 @@
 export type ModuleId =
   | 'main-data'
   | 'input-data'
-  | 'phases'
   | 'vols'
-  | 'breakdowns'
-  | 'filter-bds'
-  | 'separate-bds'
   | 'permeability'
   | 'curves'
   | 'axes'

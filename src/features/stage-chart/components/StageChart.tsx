@@ -5,13 +5,10 @@ import { localPoint } from '@visx/event'
 import { ParentSize } from '@visx/responsive'
 import { scaleLinear } from '@visx/scale'
 
-import { useDetectBreakdowns } from '@/features/breakdowns'
 import { useStageSeries } from '@/features/stage-series'
 
-import { useBreakdownsStore } from '@/shared/store/breakdowns'
 import { useStageSelectionStore } from '@/shared/store/stage-selection'
 
-import { getDefaultDetectRequest } from '../utils/detect-request'
 import { clampDomain, findNearestIndex, getMinMax } from '../utils/domain'
 import { StageChartContextMenu } from './StageChartContextMenu'
 import { StageChartHeader } from './StageChartHeader'
@@ -20,15 +17,6 @@ import { StageChartPlot } from './StageChartPlot'
 export function StageChart() {
   const selectedStageId = useStageSelectionStore((s) => s.selectedStageId)
   const q = useStageSeries(selectedStageId)
-
-  const detectMutation = useDetectBreakdowns()
-
-  const breakdownsForStage = useBreakdownsStore(
-    (s) =>
-      (selectedStageId ? s.byStageId[selectedStageId] : undefined)?.response,
-  )
-
-  const setBreakdownsForStage = useBreakdownsStore((s) => s.setForStage)
 
   const [showTreatingPressure, setShowTreatingPressure] = useState(true)
   const [showBottomHolePressure, setShowBottomHolePressure] = useState(true)
@@ -131,43 +119,6 @@ export function StageChart() {
         setShowPropCon={setShowPropCon}
         showWellBorePropMass={showWellBorePropMass}
         setShowWellBorePropMass={setShowWellBorePropMass}
-        disableDetect={!selectedStageId || detectMutation.isPending}
-        onDetectA={() => {
-          if (!selectedStageId) return
-          detectMutation
-            .mutateAsync({
-              stageId: selectedStageId,
-              body: getDefaultDetectRequest('permeability_increasing'),
-            })
-            .then((res) => {
-              setBreakdownsForStage({
-                stageId: selectedStageId,
-                mode: res.mode,
-                response: res,
-              })
-            })
-            .catch(() => {
-              // handled by mutation state
-            })
-        }}
-        onDetectB={() => {
-          if (!selectedStageId) return
-          detectMutation
-            .mutateAsync({
-              stageId: selectedStageId,
-              body: getDefaultDetectRequest('delta_v_output'),
-            })
-            .then((res) => {
-              setBreakdownsForStage({
-                stageId: selectedStageId,
-                mode: res.mode,
-                response: res,
-              })
-            })
-            .catch(() => {
-              // handled by mutation state
-            })
-        }}
       />
 
       <div className="min-h-0 flex-1 p-2">
@@ -221,8 +172,6 @@ export function StageChart() {
                     </div>
                   )
                 }
-
-                const breakdowns = breakdownsForStage?.breakdowns ?? []
 
                 const fullX = getMinMax(seconds)
                 const currentX = clampDomain({
@@ -544,7 +493,7 @@ export function StageChart() {
                     />
                     <StageChartPlot
                       width={width}
-                      height={mainHeight}
+                      height={height}
                       margin={margin}
                       innerWidth={innerWidth}
                       innerHeight={innerHeight}
@@ -561,7 +510,6 @@ export function StageChart() {
                       showSlurryRate={showSlurryRate}
                       showPropCon={showPropCon}
                       showWellBorePropMass={showWellBorePropMass}
-                      breakdowns={breakdowns}
                       xScale={xScale}
                       pressureScale={pressureScale}
                       slurryScale={slurryScale}
