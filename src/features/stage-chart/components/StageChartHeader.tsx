@@ -12,6 +12,8 @@ type Props = {
   setShowPropCon: (next: boolean) => void
   showWellBorePropMass: boolean
   setShowWellBorePropMass: (next: boolean) => void
+  showBreakdownZones: boolean
+  setShowBreakdownZones: (next: boolean) => void
 }
 
 export function StageChartHeader(props: Props) {
@@ -95,6 +97,20 @@ export function StageChartHeader(props: Props) {
                 style={{ background: '#a16207' }}
               />
               Wellbore prop. mass
+            </span>
+          </label>
+
+          <label className="flex items-center gap-2 text-xs">
+            <Checkbox
+              checked={props.showBreakdownZones}
+              onCheckedChange={(v) => props.setShowBreakdownZones(Boolean(v))}
+            />
+            <span className="flex items-center gap-2">
+              <span
+                className="inline-block size-2 rounded-full"
+                style={{ background: '#f97316' }}
+              />
+              Breakdown zones
             </span>
           </label>
         </div>

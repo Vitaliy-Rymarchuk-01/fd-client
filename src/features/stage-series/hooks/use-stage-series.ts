@@ -62,7 +62,11 @@ function saveStageSeriesToStorage(
 ): void {
   if (typeof window === 'undefined') return
 
-  window.localStorage.setItem(getStorageKey(stageId), JSON.stringify(data))
+  try {
+    window.localStorage.setItem(getStorageKey(stageId), JSON.stringify(data))
+  } catch {
+    return
+  }
 }
 
 export function useStageSeries(stageId: string | null) {

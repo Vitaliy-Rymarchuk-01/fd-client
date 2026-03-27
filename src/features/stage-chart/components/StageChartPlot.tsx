@@ -13,6 +13,8 @@ import { Group } from '@visx/group'
 import { AreaClosed, LinePath } from '@visx/shape'
 import type { ScaleLinear } from 'd3-scale'
 
+import type { BreakdownZoneDTO } from '@/features/breakdowns'
+
 type Margin = {
   top: number
   right: number
@@ -49,6 +51,9 @@ type Props = {
   showSlurryRate: boolean
   showPropCon: boolean
   showWellBorePropMass: boolean
+
+  showBreakdownZones: boolean
+  breakdownZones: BreakdownZoneDTO[]
 
   xScale: ScaleLinear<number, number>
   pressureScale: ScaleLinear<number, number>
@@ -99,6 +104,8 @@ export function StageChartPlot(props: Props) {
     showSlurryRate,
     showPropCon,
     showWellBorePropMass,
+    showBreakdownZones,
+    breakdownZones,
     xScale,
     pressureScale,
     slurryScale,
@@ -189,18 +196,6 @@ export function StageChartPlot(props: Props) {
             strokeOpacity={1}
           />
 
-          {selectionBox && selectionBox.w > 0 && selectionBox.h > 0 ? (
-            <rect
-              x={selectionBox.x}
-              y={selectionBox.y}
-              width={selectionBox.w}
-              height={selectionBox.h}
-              fill="rgba(37, 99, 235, 0.10)"
-              stroke="rgba(37, 99, 235, 0.45)"
-              strokeWidth={1}
-            />
-          ) : null}
-
           {showTreatingPressure ? (
             <AreaClosed
               data={seconds}
@@ -211,6 +206,18 @@ export function StageChartPlot(props: Props) {
               yScale={pressureScale}
               curve={curveMonotoneX}
               fill="url(#treatingArea)"
+            />
+          ) : null}
+
+          {selectionBox && selectionBox.w > 0 && selectionBox.h > 0 ? (
+            <rect
+              x={selectionBox.x}
+              y={selectionBox.y}
+              width={selectionBox.w}
+              height={selectionBox.h}
+              fill="rgba(37, 99, 235, 0.10)"
+              stroke="rgba(37, 99, 235, 0.45)"
+              strokeWidth={1}
             />
           ) : null}
 
@@ -252,6 +259,110 @@ export function StageChartPlot(props: Props) {
             />
           ) : null}
 
+          {showBreakdownZones && showTreatingPressure
+            ? breakdownZones.map((zone, i) => {
+                const startIdx = Math.max(0, zone.startIndex)
+                const endIdx = Math.min(seconds.length - 1, zone.endIndex)
+                if (endIdx - startIdx < 1) return null
+
+                const segmentSeconds = seconds.slice(startIdx, endIdx + 1)
+                const segmentPressure = treatingPressure.slice(
+                  startIdx,
+                  endIdx + 1,
+                )
+
+                const stroke =
+                  zone.kind === 'large'
+                    ? 'rgba(255, 0, 0, 1)'
+                    : zone.kind === 'medium'
+                      ? 'rgba(255, 119, 0, 1)'
+                      : 'rgba(255, 255, 0, 1)'
+
+                return (
+                  <g key={`tp-bz-${i}`}>
+                    <LinePath
+                      data={segmentSeconds}
+                      x={(sec) => xScale(sec) ?? 0}
+                      y={(_, idx2) =>
+                        pressureScale((segmentPressure[idx2] ?? 0) / 1000) ?? 0
+                      }
+                      curve={curveMonotoneX}
+                      stroke="rgba(0, 0, 0, 0.85)"
+                      strokeWidth={4}
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                    <LinePath
+                      data={segmentSeconds}
+                      x={(sec) => xScale(sec) ?? 0}
+                      y={(_, idx2) =>
+                        pressureScale((segmentPressure[idx2] ?? 0) / 1000) ?? 0
+                      }
+                      curve={curveMonotoneX}
+                      stroke={stroke}
+                      strokeWidth={2}
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </g>
+                )
+              })
+            : null}
+
+          {showBreakdownZones
+            ? breakdownZones.map((zone, i) => {
+                const startIdx = Math.max(0, zone.startIndex)
+                const endIdx = Math.min(seconds.length - 1, zone.endIndex)
+                if (endIdx - startIdx < 1) return null
+
+                const x0 = xScale(seconds[startIdx] ?? 0) ?? 0
+                const x1 = xScale(seconds[endIdx] ?? 0) ?? 0
+
+                const tpY0 = showTreatingPressure
+                  ? (pressureScale((treatingPressure[startIdx] ?? 0) / 1000) ??
+                    0)
+                  : null
+                const tpY1 = showTreatingPressure
+                  ? (pressureScale((treatingPressure[endIdx] ?? 0) / 1000) ?? 0)
+                  : null
+
+                const srY0 = showSlurryRate
+                  ? (slurryScale(slurryRate[startIdx] ?? 0) ?? 0)
+                  : null
+                const srY1 = showSlurryRate
+                  ? (slurryScale(slurryRate[endIdx] ?? 0) ?? 0)
+                  : null
+
+                return (
+                  <g key={`bz-link-${i}`}>
+                    {tpY0 != null && srY0 != null ? (
+                      <line
+                        x1={x0}
+                        x2={x0}
+                        y1={Math.min(tpY0, srY0)}
+                        y2={Math.max(tpY0, srY0)}
+                        stroke="rgba(0, 0, 0, 0.45)"
+                        strokeWidth={1}
+                        strokeDasharray="3 4"
+                      />
+                    ) : null}
+
+                    {tpY1 != null && srY1 != null ? (
+                      <line
+                        x1={x1}
+                        x2={x1}
+                        y1={Math.min(tpY1, srY1)}
+                        y2={Math.max(tpY1, srY1)}
+                        stroke="rgba(0, 0, 0, 0.45)"
+                        strokeWidth={1}
+                        strokeDasharray="3 4"
+                      />
+                    ) : null}
+                  </g>
+                )
+              })
+            : null}
+
           {showBottomHolePressure ? (
             <LinePath
               data={seconds}
@@ -277,6 +388,49 @@ export function StageChartPlot(props: Props) {
               strokeWidth={2}
             />
           ) : null}
+
+          {showBreakdownZones && showSlurryRate
+            ? breakdownZones.map((zone, i) => {
+                const startIdx = Math.max(0, zone.startIndex)
+                const endIdx = Math.min(seconds.length - 1, zone.endIndex)
+                if (endIdx - startIdx < 1) return null
+
+                const segmentSeconds = seconds.slice(startIdx, endIdx + 1)
+                const segmentRate = slurryRate.slice(startIdx, endIdx + 1)
+
+                const stroke =
+                  zone.kind === 'large'
+                    ? 'rgba(255, 0, 0, 1)'
+                    : zone.kind === 'medium'
+                      ? 'rgba(255, 119, 0, 1)'
+                      : 'rgba(255, 255, 0, 1)'
+
+                return (
+                  <g key={`sr-bz-${i}`}>
+                    <LinePath
+                      data={segmentSeconds}
+                      x={(sec) => xScale(sec) ?? 0}
+                      y={(_, idx2) => slurryScale(segmentRate[idx2] ?? 0) ?? 0}
+                      curve={curveMonotoneX}
+                      stroke="rgba(0, 0, 0, 0.85)"
+                      strokeWidth={4}
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                    <LinePath
+                      data={segmentSeconds}
+                      x={(sec) => xScale(sec) ?? 0}
+                      y={(_, idx2) => slurryScale(segmentRate[idx2] ?? 0) ?? 0}
+                      curve={curveMonotoneX}
+                      stroke={stroke}
+                      strokeWidth={2}
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </g>
+                )
+              })
+            : null}
 
           {showPropCon ? (
             <LinePath
