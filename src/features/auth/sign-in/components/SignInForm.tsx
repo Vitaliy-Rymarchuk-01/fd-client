@@ -6,6 +6,8 @@ import { zodResolver } from '@hookform/resolvers/zod'
 
 import { toast } from 'sonner'
 
+import { setAccessToken } from '@/features/auth/store/session'
+
 import { Button } from '@/shared/components/ui/button'
 import { Input } from '@/shared/components/ui/input'
 import { Label } from '@/shared/components/ui/label'
@@ -33,7 +35,8 @@ export function SignInForm() {
 
   const onSubmit = handleSubmit((values) => {
     signInMutation.mutate(values, {
-      onSuccess: () => {
+      onSuccess: (response) => {
+        setAccessToken(response.accessToken)
         navigate(APP_ROUTES.dashboard)
       },
       onError: (error) => {
