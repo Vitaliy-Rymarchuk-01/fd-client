@@ -14,6 +14,7 @@ import { AreaClosed, LinePath } from '@visx/shape'
 import type { ScaleLinear } from 'd3-scale'
 
 import type { BreakdownZoneDTO } from '@/features/breakdowns'
+import { useTheme } from '@/shared/hooks/use-theme'
 
 type Margin = {
   top: number
@@ -131,6 +132,8 @@ export function StageChartPlot(props: Props) {
     overlayRef,
   } = props
 
+  const { theme } = useTheme()
+
   const treatingColor = '#ef4444'
   const bhColor = '#22c55e'
   const slurryColor = '#2563eb'
@@ -140,7 +143,7 @@ export function StageChartPlot(props: Props) {
   const gridColor = 'rgba(148, 163, 184, 0.22)'
   const axisStroke = 'rgba(148, 163, 184, 0.55)'
   const tickStroke = 'rgba(148, 163, 184, 0.35)'
-  const tickLabel = 'hsl(var(--muted-foreground))'
+  const tickLabel = theme === 'dark' ? 'rgba(255, 255, 255, 0.55)' : '#000000'
 
   const idx =
     hoverIndex == null

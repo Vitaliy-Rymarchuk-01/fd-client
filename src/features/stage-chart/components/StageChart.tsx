@@ -127,7 +127,7 @@ export function StageChart() {
         setShowBreakdownZones={setShowBreakdownZones}
       />
 
-      <div className="min-h-0 flex-1 p-2">
+      <div className="min-h-0 flex-1 p-2 bg-card/80">
         <div className="h-full min-h-0">
           {!selectedStageId ? (
             <div className="text-muted-foreground flex h-full w-full items-center justify-center text-sm">
