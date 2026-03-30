@@ -4,6 +4,7 @@ import type { ReactNode } from 'react'
 import { Menu } from 'lucide-react'
 
 import { DashboardSidebar } from '@/features/dashboard-sidebar'
+import { useActiveProjectStore } from '@/features/projects'
 
 import { AppHeader } from '@/shared/components/layout/AppHeader'
 import { AppSidebar } from '@/shared/components/layout/AppSidebar'
@@ -17,6 +18,7 @@ interface DashboardLayoutProps {
 export function DashboardLayout({ children }: DashboardLayoutProps) {
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
   const [appSidebarExpanded, setAppSidebarExpanded] = useState(false)
+  const activeProjectId = useActiveProjectStore((s) => s.activeProjectId)
 
   return (
     <div className="bg-background text-foreground flex h-dvh flex-col overflow-hidden">
@@ -31,14 +33,14 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             <div className="flex h-full flex-col overflow-y-auto">
               <AppSidebar />
               <div className="border-sidebar-border border-t">
-                <DashboardSidebar />
+                <DashboardSidebar key={activeProjectId ?? 'none'} />
               </div>
             </div>
           </div>
         </div>
       ) : null}
 
-      <div className="border-border bg-background/80 supports-[backdrop-filter]:bg-background/60 sticky top-0 z-10 flex items-center border-b backdrop-blur">
+      <div className="border-border bg-background/80 supports-backdrop-filter:bg-background/60 sticky top-0 z-10 flex items-center border-b backdrop-blur">
         <div className="flex items-center gap-2 pl-2 md:hidden">
           <Button
             aria-label="Open navigation"
@@ -68,8 +70,8 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
           <div
             className={cn(
-              'border-sidebar-border bg-sidebar text-sidebar-foreground absolute top-0 left-0 z-30 h-full w-[260px] border-r shadow-sm',
-              'transition-[opacity,transform] duration-200 [transition-timing-function:var(--ease-out-quart)] motion-reduce:transition-none',
+              'border-sidebar-border bg-sidebar text-sidebar-foreground absolute top-0 left-0 z-30 h-full w-65 border-r shadow-sm',
+              'transition-[opacity,transform] duration-200 ease-(--ease-out-quart) motion-reduce:transition-none',
               appSidebarExpanded
                 ? 'pointer-events-auto translate-x-0 opacity-100'
                 : 'pointer-events-none -translate-x-2 opacity-0',
@@ -79,8 +81,8 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           </div>
         </div>
 
-        <div className="border-sidebar-border bg-sidebar text-sidebar-foreground hidden w-[280px] border-r md:block">
-          <DashboardSidebar />
+        <div className="border-sidebar-border bg-sidebar text-sidebar-foreground hidden w-70 border-r md:block">
+          <DashboardSidebar key={activeProjectId ?? 'none'} />
         </div>
 
         <main className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">

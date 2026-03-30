@@ -8,6 +8,7 @@ import type {
 export async function uploadFiles(params: {
   files: File[]
   batchId?: string
+  projectId: string
 }): Promise<UploadFilesResponseDTO> {
   const form = new FormData()
 
@@ -18,6 +19,8 @@ export async function uploadFiles(params: {
   if (params.batchId) {
     form.append('batchId', params.batchId)
   }
+
+  form.append('projectId', params.projectId)
 
   const { data } = await api.post<UploadFilesResponseDTO>('/upload/files', form)
   return data

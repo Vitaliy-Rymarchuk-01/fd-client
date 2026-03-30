@@ -1,5 +1,6 @@
 export interface UploadFileResultDTO {
   batchId: string
+  projectId: string
   fileId: string
   fileName: string
   status: string
@@ -7,6 +8,7 @@ export interface UploadFileResultDTO {
 
 export interface UploadFilesResponseDTO {
   batchId: string
+  projectId: string
   files: UploadFileResultDTO[]
 }
 

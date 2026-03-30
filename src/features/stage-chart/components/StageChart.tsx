@@ -8,6 +8,7 @@ import { scaleLinear } from '@visx/scale'
 import { useBreakdowns } from '@/features/breakdowns'
 import { useStageSeries } from '@/features/stage-series'
 
+import { useCurveVisibilityStore } from '@/shared/store/curve-visibility'
 import { useStageSelectionStore } from '@/shared/store/stage-selection'
 
 import { clampDomain, findNearestIndex, getMinMax } from '../utils/domain'
@@ -19,13 +20,20 @@ export function StageChart() {
   const selectedStageId = useStageSelectionStore((s) => s.selectedStageId)
   const q = useStageSeries(selectedStageId)
 
-  const [showTreatingPressure, setShowTreatingPressure] = useState(true)
-  const [showBottomHolePressure, setShowBottomHolePressure] = useState(true)
-  const [showSlurryRate, setShowSlurryRate] = useState(true)
-
-  const [showPropCon, setShowPropCon] = useState(true)
-  const [showWellBorePropMass, setShowWellBorePropMass] = useState(false)
-  const [showBreakdownZones, setShowBreakdownZones] = useState(true)
+  const showTreatingPressure = useCurveVisibilityStore(
+    (s) => s.showTreatingPressure,
+  )
+  const showBottomHolePressure = useCurveVisibilityStore(
+    (s) => s.showBottomHolePressure,
+  )
+  const showSlurryRate = useCurveVisibilityStore((s) => s.showSlurryRate)
+  const showPropCon = useCurveVisibilityStore((s) => s.showPropCon)
+  const showWellBorePropMass = useCurveVisibilityStore(
+    (s) => s.showWellBorePropMass,
+  )
+  const showBreakdownZones = useCurveVisibilityStore(
+    (s) => s.showBreakdownZones,
+  )
 
   const breakdownsQ = useBreakdowns(selectedStageId, q.data)
 
@@ -112,22 +120,9 @@ export function StageChart() {
 
   return (
     <section className="flex h-full min-h-0 flex-col">
-      <StageChartHeader
-        showTreatingPressure={showTreatingPressure}
-        setShowTreatingPressure={setShowTreatingPressure}
-        showBottomHolePressure={showBottomHolePressure}
-        setShowBottomHolePressure={setShowBottomHolePressure}
-        showSlurryRate={showSlurryRate}
-        setShowSlurryRate={setShowSlurryRate}
-        showPropCon={showPropCon}
-        setShowPropCon={setShowPropCon}
-        showWellBorePropMass={showWellBorePropMass}
-        setShowWellBorePropMass={setShowWellBorePropMass}
-        showBreakdownZones={showBreakdownZones}
-        setShowBreakdownZones={setShowBreakdownZones}
-      />
+      <StageChartHeader title="Stage chart" />
 
-      <div className="min-h-0 flex-1 p-2 bg-card/80">
+      <div className="bg-card/80 min-h-0 flex-1 p-2">
         <div className="h-full min-h-0">
           {!selectedStageId ? (
             <div className="text-muted-foreground flex h-full w-full items-center justify-center text-sm">

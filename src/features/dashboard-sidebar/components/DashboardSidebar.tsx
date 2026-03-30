@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 
 import { useUploadFiles, useWellsStages } from '@/features/data-import'
 import type { ImportFileItem } from '@/features/data-import/types/file-import'
+import { useActiveProjectStore, useProjects } from '@/features/projects'
 
 import { ScrollArea } from '@/shared/components/ui/scroll-area'
 import { useStageSelectionStore } from '@/shared/store/stage-selection'
@@ -9,32 +10,29 @@ import { useStageSelectionStore } from '@/shared/store/stage-selection'
 import type { ModuleGroup, ModuleId } from '../types/module'
 import type { StageNode } from '../types/stage'
 import { createId } from '../utils/import-parsing'
+import { CurvesSection } from './CurvesSection'
 import { MainDataSection } from './MainDataSection'
 import { ModuleDropdown } from './ModuleDropdown'
 
 const SIDEBAR_STORAGE_KEY = 'fd.sidebar:imports'
 
-function loadSidebarState(): {
+function projectStorageKey(projectId: string): string {
+  return `${SIDEBAR_STORAGE_KEY}:${projectId}`
+}
+
+function loadSidebarStateForProject(projectId: string | null): {
   batchId: string | null
   excludedStageIds: Record<string, boolean>
   selectedStageIds: Record<string, boolean>
 } {
-  if (typeof window === 'undefined') {
-    return {
-      batchId: null,
-      excludedStageIds: {},
-      selectedStageIds: {},
-    }
+  if (!projectId || typeof window === 'undefined') {
+    return { batchId: null, excludedStageIds: {}, selectedStageIds: {} }
   }
 
   try {
-    const raw = window.localStorage.getItem(SIDEBAR_STORAGE_KEY)
+    const raw = window.localStorage.getItem(projectStorageKey(projectId))
     if (!raw) {
-      return {
-        batchId: null,
-        excludedStageIds: {},
-        selectedStageIds: {},
-      }
+      return { batchId: null, excludedStageIds: {}, selectedStageIds: {} }
     }
 
     const parsed = JSON.parse(raw) as {
@@ -44,25 +42,16 @@ function loadSidebarState(): {
     } | null
 
     if (!parsed) {
-      return {
-        batchId: null,
-        excludedStageIds: {},
-        selectedStageIds: {},
-      }
+      return { batchId: null, excludedStageIds: {}, selectedStageIds: {} }
     }
 
     return {
       batchId: parsed.batchId ?? null,
       excludedStageIds: parsed.excludedStageIds ?? {},
-      // після reload жоден stage не має бути активним
-      selectedStageIds: {},
+      selectedStageIds: parsed.selectedStageIds ?? {},
     }
   } catch {
-    return {
-      batchId: null,
-      excludedStageIds: {},
-      selectedStageIds: {},
-    }
+    return { batchId: null, excludedStageIds: {}, selectedStageIds: {} }
   }
 }
 
@@ -92,42 +81,41 @@ const MODULE_GROUPS: ReadonlyArray<ModuleGroup> = [
 export function DashboardSidebar() {
   const [importItems, setImportItems] = useState<ImportFileItem[]>([])
   const [activeModuleId, setActiveModuleId] = useState<ModuleId>('main-data')
-  const [
-    {
-      batchId: initialBatchId,
-      excludedStageIds: initialExcludedIds,
-      selectedStageIds: initialSelectedIds,
-    },
-  ] = useState(loadSidebarState)
-
-  const [batchId, setBatchId] = useState<string | null>(initialBatchId)
+  const activeProjectId = useActiveProjectStore((s) => s.activeProjectId)
+  const projectsQuery = useProjects()
+  const [batchId, setBatchId] = useState<string | null>(
+    () => loadSidebarStateForProject(activeProjectId).batchId,
+  )
   const [serverStageIdByLocalFileId, setServerStageIdByLocalFileId] = useState<
     Record<string, string>
   >({})
-  const [excludedServerStageIds, setExcludedServerStageIds] =
-    useState<Record<string, boolean>>(initialExcludedIds)
-  const [selectedStageIds, setSelectedStageIds] =
-    useState<Record<string, boolean>>(initialSelectedIds)
+  const [excludedServerStageIds, setExcludedServerStageIds] = useState<
+    Record<string, boolean>
+  >(() => loadSidebarStateForProject(activeProjectId).excludedStageIds)
+  const [selectedStageIds, setSelectedStageIds] = useState<
+    Record<string, boolean>
+  >(() => loadSidebarStateForProject(activeProjectId).selectedStageIds)
 
   const setSelectedStageId = useStageSelectionStore((s) => s.setSelectedStageId)
-
   const uploadFilesMutation = useUploadFiles()
   const wellsStagesQuery = useWellsStages(batchId)
 
   useEffect(() => {
-    if (typeof window === 'undefined') return
+    if (typeof window === 'undefined' || !activeProjectId) return
 
     try {
-      const payload = {
-        batchId,
-        excludedStageIds: excludedServerStageIds,
-        selectedStageIds,
-      }
-      window.localStorage.setItem(SIDEBAR_STORAGE_KEY, JSON.stringify(payload))
+      window.localStorage.setItem(
+        projectStorageKey(activeProjectId),
+        JSON.stringify({
+          batchId,
+          excludedStageIds: excludedServerStageIds,
+          selectedStageIds,
+        }),
+      )
     } catch {
       // ignore quota / JSON errors
     }
-  }, [batchId, excludedServerStageIds, selectedStageIds])
+  }, [activeProjectId, batchId, excludedServerStageIds, selectedStageIds])
 
   const stageNodes: StageNode[] = useMemo(() => {
     if (!wellsStagesQuery.data) return []
@@ -146,10 +134,9 @@ export function DashboardSidebar() {
       .filter((node) => !excludedServerStageIds[node.id])
   }, [excludedServerStageIds, wellsStagesQuery.data])
 
-  const isMainDataEmpty =
-    activeModuleId === 'main-data' && stageNodes.length === 0
-
   const handleFilesAdded = async (files: File[]) => {
+    if (!activeProjectId) return
+
     const localIdByFileName: Record<string, string> = {}
     const newItems: ImportFileItem[] = files.map((file) => {
       const localId = createId()
@@ -163,10 +150,10 @@ export function DashboardSidebar() {
       const res = await uploadFilesMutation.mutateAsync({
         files,
         batchId: batchId ?? undefined,
+        projectId: activeProjectId,
       })
 
-      const nextBatchId = res.batchId
-      setBatchId(nextBatchId)
+      setBatchId(res.batchId)
       if (batchId) {
         void wellsStagesQuery.refetch()
       }
@@ -175,35 +162,28 @@ export function DashboardSidebar() {
         const next = { ...prev }
         res.files.forEach((uploaded) => {
           const localId = localIdByFileName[uploaded.fileName]
-          if (localId) {
-            next[localId] = uploaded.fileId
-          }
+          if (localId) next[localId] = uploaded.fileId
         })
         return next
       })
 
       setImportItems((prev) =>
         prev.map((item) => {
-          const isUploadedNow =
+          const shouldUpdate =
             localIdByFileName[item.file.name] === item.id &&
             files.some((f) => f.name === item.file.name)
-          if (!isUploadedNow) return item
-          return { ...item, status: 'uploaded' }
+          return shouldUpdate ? { ...item, status: 'uploaded' } : item
         }),
       )
     } catch {
       setImportItems((prev) =>
         prev.map((item) => {
-          const isUploadedNow =
+          const shouldUpdate =
             localIdByFileName[item.file.name] === item.id &&
             files.some((f) => f.name === item.file.name)
-          if (!isUploadedNow) return item
-
-          return {
-            ...item,
-            status: 'error',
-            errorMessage: 'Upload failed',
-          }
+          return shouldUpdate
+            ? { ...item, status: 'error', errorMessage: 'Upload failed' }
+            : item
         }),
       )
     }
@@ -248,9 +228,29 @@ export function DashboardSidebar() {
     setSelectedStageId(stageId)
   }
 
+  const isMainDataEmpty =
+    activeModuleId === 'main-data' && stageNodes.length === 0
+  const activeProjectName = useMemo(() => {
+    if (!activeProjectId) return null
+
+    return (
+      projectsQuery.data?.find((project) => project.id === activeProjectId)
+        ?.name ?? null
+    )
+  }, [activeProjectId, projectsQuery.data])
+
   return (
     <nav className="flex h-full flex-col">
-      <div className="border-sidebar-border bg-sidebar/60 supports-backdrop-filter:bg-sidebar/40 h-12.5 border-b p-2 backdrop-blur">
+      <div className="border-sidebar-border bg-sidebar/60 supports-backdrop-filter:bg-sidebar/40 flex items-center gap-3 border-b p-3 backdrop-blur">
+        <p className="text-muted-foreground text-xs font-medium tracking-[0.18em] uppercase">
+          Current project
+        </p>
+        <p className="text-sidebar-foreground truncate text-xs font-semibold uppercase">
+          {activeProjectName ?? activeProjectId ?? 'No project selected'}
+        </p>
+      </div>
+
+      <div className="border-sidebar-border bg-sidebar/60 supports-backdrop-filter:bg-sidebar/40 border-b p-1 backdrop-blur">
         <ModuleDropdown
           activeModuleId={activeModuleId}
           moduleGroups={MODULE_GROUPS}
@@ -260,7 +260,11 @@ export function DashboardSidebar() {
 
       <ScrollArea className="min-h-0 flex-1">
         <div className="flex min-h-0 flex-1 flex-col p-4">
-          {isMainDataEmpty ? (
+          {!activeProjectId ? (
+            <section className="border-sidebar-border/70 text-muted-foreground rounded-xl border px-3 py-3 text-xs">
+              Create or select a project to start uploading files.
+            </section>
+          ) : isMainDataEmpty ? (
             <div className="flex min-h-0 flex-1 flex-col">
               <MainDataSection
                 importItems={importItems}
@@ -282,6 +286,8 @@ export function DashboardSidebar() {
               onClearAll={handleClear}
               onToggleStage={handleToggleStage}
             />
+          ) : activeModuleId === 'curves' ? (
+            <CurvesSection />
           ) : (
             <section className="border-sidebar-border/70 text-muted-foreground rounded-xl border px-3 py-3 text-xs">
               Module — controls will be implemented here.

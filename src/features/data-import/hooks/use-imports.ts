@@ -11,7 +11,7 @@ export function useUploadFiles() {
 export function useWellsStages(batchId: string | null) {
   return useQuery({
     queryKey: ['imports', 'wells-stages', batchId],
-    queryFn: () => getWellsStages({ batchId: batchId as string }),
+    queryFn: () => getWellsStages({ batchId: batchId ?? '' }),
     enabled: Boolean(batchId),
   })
 }
