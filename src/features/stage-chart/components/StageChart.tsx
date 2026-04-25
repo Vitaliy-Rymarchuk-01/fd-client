@@ -27,6 +27,7 @@ export function StageChart() {
     (s) => s.showBottomHolePressure,
   )
   const showSlurryRate = useCurveVisibilityStore((s) => s.showSlurryRate)
+  const showCleanRate = useCurveVisibilityStore((s) => s.showCleanRate)
   const showPropCon = useCurveVisibilityStore((s) => s.showPropCon)
   const showWellBorePropMass = useCurveVisibilityStore(
     (s) => s.showWellBorePropMass,
@@ -137,7 +138,16 @@ export function StageChart() {
           ) : (
             <ParentSize>
               {({ width, height }) => {
-                const margin = { top: 16, right: 196, bottom: 28, left: 56 }
+                const rightAxesCount =
+                  (showSlurryRate ? 1 : 0) +
+                  (showPropCon ? 1 : 0) +
+                  (showWellBorePropMass ? 1 : 0)
+                const margin = {
+                  top: 16,
+                  right: Math.max(1, rightAxesCount * 65) + 1,
+                  bottom: 28,
+                  left: 56,
+                }
                 const mainHeight = Math.max(0, height)
 
                 const innerWidth = Math.max(
@@ -152,6 +162,7 @@ export function StageChart() {
                 const {
                   bottomHolePressure,
                   bottomHolePropCon,
+                  cleanRate,
                   propCon,
                   seconds,
                   slurryRate,
@@ -463,6 +474,11 @@ export function StageChart() {
                     ? null
                     : (slurryScale(slurryRate[idx] ?? 0) ?? null)
 
+                const hoverCleanRateY =
+                  idx == null
+                    ? null
+                    : (slurryScale(cleanRate[idx] ?? 0) ?? null)
+
                 const hoverPropConY =
                   idx == null
                     ? null
@@ -501,12 +517,14 @@ export function StageChart() {
                       treatingPressure={treatingPressure}
                       bottomHolePressure={bottomHolePressure}
                       slurryRate={slurryRate}
+                      cleanRate={cleanRate}
                       propCon={propCon}
                       bottomHolePropCon={bottomHolePropCon}
                       wellBorePropMass={wellBorePropMass}
                       showTreatingPressure={showTreatingPressure}
                       showBottomHolePressure={showBottomHolePressure}
                       showSlurryRate={showSlurryRate}
+                      showCleanRate={showCleanRate}
                       showPropCon={showPropCon}
                       showWellBorePropMass={showWellBorePropMass}
                       showBreakdownZones={Boolean(breakdownMode)}
@@ -523,6 +541,7 @@ export function StageChart() {
                       hoverTreatingY={hoverTreatingY}
                       hoverBhY={hoverBhY}
                       hoverSlurryY={hoverSlurryY}
+                      hoverCleanRateY={hoverCleanRateY}
                       hoverPropConY={hoverPropConY}
                       hoverWellBorePropMassY={hoverWellBorePropMassY}
                       hoverIndex={idx}

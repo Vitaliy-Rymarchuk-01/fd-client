@@ -14,6 +14,7 @@ import { AreaClosed, LinePath } from '@visx/shape'
 import type { ScaleLinear } from 'd3-scale'
 
 import type { BreakdownZoneDTO } from '@/features/breakdowns'
+
 import { useTheme } from '@/shared/hooks/use-theme'
 
 type Margin = {
@@ -43,6 +44,7 @@ type Props = {
   treatingPressure: number[]
   bottomHolePressure: number[]
   slurryRate: number[]
+  cleanRate: number[]
   propCon: number[]
   bottomHolePropCon: number[]
   wellBorePropMass: number[]
@@ -50,6 +52,7 @@ type Props = {
   showTreatingPressure: boolean
   showBottomHolePressure: boolean
   showSlurryRate: boolean
+  showCleanRate: boolean
   showPropCon: boolean
   showWellBorePropMass: boolean
 
@@ -68,6 +71,7 @@ type Props = {
   hoverTreatingY: number | null
   hoverBhY: number | null
   hoverSlurryY: number | null
+  hoverCleanRateY: number | null
   hoverPropConY: number | null
   hoverWellBorePropMassY: number | null
   hoverIndex: number | null
@@ -97,12 +101,14 @@ export function StageChartPlot(props: Props) {
     treatingPressure,
     bottomHolePressure,
     slurryRate,
+    cleanRate,
     propCon,
     bottomHolePropCon,
     wellBorePropMass,
     showTreatingPressure,
     showBottomHolePressure,
     showSlurryRate,
+    showCleanRate,
     showPropCon,
     showWellBorePropMass,
     showBreakdownZones,
@@ -117,6 +123,7 @@ export function StageChartPlot(props: Props) {
     hoverTreatingY,
     hoverBhY,
     hoverSlurryY,
+    hoverCleanRateY,
     hoverPropConY,
     hoverWellBorePropMassY,
     hoverIndex,
@@ -137,6 +144,7 @@ export function StageChartPlot(props: Props) {
   const treatingColor = '#ef4444'
   const bhColor = '#22c55e'
   const slurryColor = '#2563eb'
+  const cleanRateColor = '#ADD8E6'
   const propConColor = '#94a3b8'
   const wellBorePropMassColor = '#a16207'
 
@@ -392,6 +400,18 @@ export function StageChartPlot(props: Props) {
             />
           ) : null}
 
+          {showCleanRate ? (
+            <LinePath
+              data={seconds}
+              x={(sec) => xScale(sec) ?? 0}
+              y={(_, idx2) => slurryScale(cleanRate[idx2] ?? 0) ?? 0}
+              curve={curveMonotoneX}
+              stroke={cleanRateColor}
+              strokeOpacity={0.9}
+              strokeWidth={2}
+            />
+          ) : null}
+
           {showBreakdownZones && showSlurryRate
             ? breakdownZones.map((zone, i) => {
                 const startIdx = Math.max(0, zone.startIndex)
@@ -511,6 +531,17 @@ export function StageChartPlot(props: Props) {
             />
           ) : null}
 
+          {hoverX != null && hoverCleanRateY != null && showCleanRate ? (
+            <circle
+              cx={hoverX}
+              cy={hoverCleanRateY}
+              r={3.5}
+              fill={cleanRateColor}
+              stroke="white"
+              strokeWidth={1.5}
+            />
+          ) : null}
+
           {hoverX != null && hoverPropConY != null && showPropCon ? (
             <circle
               cx={hoverX}
@@ -621,45 +652,61 @@ export function StageChartPlot(props: Props) {
           Pressure (psi*10^3)
         </text>
 
-        <text
-          x={innerWidth + 32}
-          y={innerHeight / 1.9}
-          transform={`rotate(-90, ${innerWidth + 32}, ${innerHeight / 2})`}
-          fill={slurryColor}
-          fontSize={12}
-          fontWeight={600}
-          textAnchor="middle"
-        >
-          Rate (bbl/min)
-        </text>
-
-        {showPropCon ? (
-          <text
-            x={innerWidth + 76}
-            y={innerHeight / 1.8}
-            transform={`rotate(-90, ${innerWidth + 76}, ${innerHeight / 2})`}
-            fill={propConColor}
-            fontSize={12}
-            fontWeight={600}
-            textAnchor="middle"
-          >
-            Prop. conc. (ppg)
-          </text>
-        ) : null}
-
-        {showWellBorePropMass ? (
-          <text
-            x={innerWidth + 120}
-            y={innerHeight / 1.7}
-            transform={`rotate(-90, ${innerWidth + 120}, ${innerHeight / 2})`}
-            fill={wellBorePropMassColor}
-            fontSize={12}
-            fontWeight={600}
-            textAnchor="middle"
-          >
-            Wellbore prop. mass (lbs*10^3)
-          </text>
-        ) : null}
+        {(() => {
+          let rightOffset = 0
+          const slurryLabelX = showSlurryRate ? innerWidth + 32 : null
+          if (showSlurryRate) rightOffset += 65
+          const propConLabelX = showPropCon
+            ? innerWidth + rightOffset + 11
+            : null
+          if (showPropCon) rightOffset += 65
+          const wbpmLabelX = showWellBorePropMass
+            ? innerWidth + rightOffset + 11
+            : null
+          return (
+            <>
+              {slurryLabelX != null ? (
+                <text
+                  x={slurryLabelX}
+                  y={innerHeight / 1.9}
+                  transform={`rotate(-90, ${slurryLabelX}, ${innerHeight / 2})`}
+                  fill={slurryColor}
+                  fontSize={12}
+                  fontWeight={600}
+                  textAnchor="middle"
+                >
+                  Rate (bbl/min)
+                </text>
+              ) : null}
+              {propConLabelX != null ? (
+                <text
+                  x={propConLabelX}
+                  y={innerHeight / 1.8}
+                  transform={`rotate(-90, ${propConLabelX}, ${innerHeight / 2})`}
+                  fill={propConColor}
+                  fontSize={12}
+                  fontWeight={600}
+                  textAnchor="middle"
+                >
+                  Prop. conc. (ppg)
+                </text>
+              ) : null}
+              {wbpmLabelX != null ? (
+                <text
+                  x={wbpmLabelX}
+                  y={innerHeight / 1.7}
+                  transform={`rotate(-90, ${wbpmLabelX}, ${innerHeight / 2})`}
+                  fill={wellBorePropMassColor}
+                  fontSize={12}
+                  fontWeight={600}
+                  textAnchor="middle"
+                >
+                  Wellbore prop. mass (lbs*10^3)
+                </text>
+              ) : null}
+            </>
+          )
+        })()}
 
         <AxisBottom
           top={innerHeight}
@@ -687,54 +734,70 @@ export function StageChartPlot(props: Props) {
             dy: '0.25em',
           })}
         />
-        <AxisRight
-          left={innerWidth}
-          scale={slurryScale}
-          tickFormat={(v) => Number(v).toFixed(0)}
-          stroke={axisStroke}
-          tickStroke={tickStroke}
-          tickLabelProps={() => ({
-            fill: tickLabel,
-            fontSize: 11,
-            textAnchor: 'start',
-            dx: '0.25em',
-            dy: '0.25em',
-          })}
-        />
-
-        {showPropCon ? (
-          <AxisRight
-            left={innerWidth + 65}
-            scale={propConScale}
-            tickFormat={(v) => Number(v).toFixed(1)}
-            stroke={axisStroke}
-            tickStroke={tickStroke}
-            tickLabelProps={() => ({
-              fill: tickLabel,
-              fontSize: 11,
-              textAnchor: 'start',
-              dx: '0.25em',
-              dy: '0.25em',
-            })}
-          />
-        ) : null}
-
-        {showWellBorePropMass ? (
-          <AxisRight
-            left={innerWidth + 130}
-            scale={wellBorePropMassScale}
-            tickFormat={(v) => Number(v).toFixed(0)}
-            stroke={axisStroke}
-            tickStroke={tickStroke}
-            tickLabelProps={() => ({
-              fill: tickLabel,
-              fontSize: 11,
-              textAnchor: 'start',
-              dx: '0.25em',
-              dy: '0.25em',
-            })}
-          />
-        ) : null}
+        {(() => {
+          let rightOffset = 0
+          const axes: React.ReactNode[] = []
+          if (showSlurryRate) {
+            axes.push(
+              <AxisRight
+                key="slurry"
+                left={innerWidth + rightOffset}
+                scale={slurryScale}
+                tickFormat={(v) => Number(v).toFixed(0)}
+                stroke={axisStroke}
+                tickStroke={tickStroke}
+                tickLabelProps={() => ({
+                  fill: tickLabel,
+                  fontSize: 11,
+                  textAnchor: 'start',
+                  dx: '0.25em',
+                  dy: '0.25em',
+                })}
+              />,
+            )
+            rightOffset += 65
+          }
+          if (showPropCon) {
+            axes.push(
+              <AxisRight
+                key="propCon"
+                left={innerWidth + rightOffset}
+                scale={propConScale}
+                tickFormat={(v) => Number(v).toFixed(1)}
+                stroke={axisStroke}
+                tickStroke={tickStroke}
+                tickLabelProps={() => ({
+                  fill: tickLabel,
+                  fontSize: 11,
+                  textAnchor: 'start',
+                  dx: '0.25em',
+                  dy: '0.25em',
+                })}
+              />,
+            )
+            rightOffset += 65
+          }
+          if (showWellBorePropMass) {
+            axes.push(
+              <AxisRight
+                key="wbpm"
+                left={innerWidth + rightOffset}
+                scale={wellBorePropMassScale}
+                tickFormat={(v) => Number(v).toFixed(0)}
+                stroke={axisStroke}
+                tickStroke={tickStroke}
+                tickLabelProps={() => ({
+                  fill: tickLabel,
+                  fontSize: 11,
+                  textAnchor: 'start',
+                  dx: '0.25em',
+                  dy: '0.25em',
+                })}
+              />,
+            )
+          }
+          return axes
+        })()}
       </Group>
 
       <rect

@@ -15,6 +15,10 @@ const CURVE_ITEMS = [
     label: 'Slurry rate',
   },
   {
+    color: '#ADD8E6',
+    label: 'Clarified rate',
+  },
+  {
     color: '#94a3b8',
     label: 'Prop. conc.',
   },
@@ -34,6 +38,7 @@ export function CurvesSection() {
   const showSlurryRate = useCurveVisibilityStore(
     (state) => state.showSlurryRate,
   )
+  const showCleanRate = useCurveVisibilityStore((state) => state.showCleanRate)
   const showPropCon = useCurveVisibilityStore((state) => state.showPropCon)
   const showWellBorePropMass = useCurveVisibilityStore(
     (state) => state.showWellBorePropMass,
@@ -48,6 +53,9 @@ export function CurvesSection() {
   )
   const setShowSlurryRate = useCurveVisibilityStore(
     (state) => state.setShowSlurryRate,
+  )
+  const setShowCleanRate = useCurveVisibilityStore(
+    (state) => state.setShowCleanRate,
   )
   const setShowPropCon = useCurveVisibilityStore(
     (state) => state.setShowPropCon,
@@ -70,11 +78,13 @@ export function CurvesSection() {
                 ? showBottomHolePressure
                 : item.label === 'Slurry rate'
                   ? showSlurryRate
-                  : item.label === 'Prop. conc.'
-                    ? showPropCon
-                    : item.label === 'Wellbore prop. mass'
-                      ? showWellBorePropMass
-                      : false
+                  : item.label === 'Clarified rate'
+                    ? showCleanRate
+                    : item.label === 'Prop. conc.'
+                      ? showPropCon
+                      : item.label === 'Wellbore prop. mass'
+                        ? showWellBorePropMass
+                        : false
 
           const setChecked =
             item.label === 'Treating pressure'
@@ -83,11 +93,13 @@ export function CurvesSection() {
                 ? setShowBottomHolePressure
                 : item.label === 'Slurry rate'
                   ? setShowSlurryRate
-                  : item.label === 'Prop. conc.'
-                    ? setShowPropCon
-                    : item.label === 'Wellbore prop. mass'
-                      ? setShowWellBorePropMass
-                      : () => {}
+                  : item.label === 'Clarified rate'
+                    ? setShowCleanRate
+                    : item.label === 'Prop. conc.'
+                      ? setShowPropCon
+                      : item.label === 'Wellbore prop. mass'
+                        ? setShowWellBorePropMass
+                        : () => {}
 
           return (
             <label key={item.label} className="flex items-center gap-2 text-xs">

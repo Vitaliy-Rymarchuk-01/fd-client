@@ -35,13 +35,14 @@ export function MainDataSection({
           onClear={onClearAll}
         />
       ) : (
-        <div className="flex flex-1 items-center justify-center">
+        <div className="flex w-full min-w-0 flex-1 flex-col overflow-hidden">
           <DataImportPanel
             items={importItems}
             onFilesAdded={onFilesAdded}
             onRemoveItem={onRemoveImportItem}
             onClear={onClearAll}
             variant="full"
+            className="w-full"
           />
         </div>
       )}

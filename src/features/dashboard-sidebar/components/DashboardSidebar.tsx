@@ -134,6 +134,14 @@ export function DashboardSidebar() {
       .filter((node) => !excludedServerStageIds[node.id])
   }, [excludedServerStageIds, wellsStagesQuery.data])
 
+  useEffect(() => {
+    if (stageNodes.length === 0) return
+    const restoredId = Object.keys(selectedStageIds).find(
+      (id) => selectedStageIds[id] && stageNodes.some((n) => n.id === id),
+    )
+    setSelectedStageId(restoredId ?? null)
+  }, [stageNodes, selectedStageIds, setSelectedStageId])
+
   const handleFilesAdded = async (files: File[]) => {
     if (!activeProjectId) return
 
@@ -259,7 +267,7 @@ export function DashboardSidebar() {
       </div>
 
       <ScrollArea className="min-h-0 flex-1">
-        <div className="flex min-h-0 flex-1 flex-col p-4">
+        <div className="flex w-full min-w-0 flex-col p-4">
           {!activeProjectId ? (
             <section className="border-sidebar-border/70 text-muted-foreground rounded-xl border px-3 py-3 text-xs">
               Create or select a project to start uploading files.
