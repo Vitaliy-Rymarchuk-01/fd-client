@@ -22,10 +22,6 @@ const CURVE_ITEMS = [
     color: '#a16207',
     label: 'Wellbore prop. mass',
   },
-  {
-    color: '#f97316',
-    label: 'Breakdown zones',
-  },
 ] as const
 
 export function CurvesSection() {
@@ -42,9 +38,7 @@ export function CurvesSection() {
   const showWellBorePropMass = useCurveVisibilityStore(
     (state) => state.showWellBorePropMass,
   )
-  const showBreakdownZones = useCurveVisibilityStore(
-    (state) => state.showBreakdownZones,
-  )
+  const breakdownMode = useCurveVisibilityStore((state) => state.breakdownMode)
 
   const setShowTreatingPressure = useCurveVisibilityStore(
     (state) => state.setShowTreatingPressure,
@@ -61,8 +55,8 @@ export function CurvesSection() {
   const setShowWellBorePropMass = useCurveVisibilityStore(
     (state) => state.setShowWellBorePropMass,
   )
-  const setShowBreakdownZones = useCurveVisibilityStore(
-    (state) => state.setShowBreakdownZones,
+  const setBreakdownMode = useCurveVisibilityStore(
+    (state) => state.setBreakdownMode,
   )
 
   return (
@@ -80,7 +74,7 @@ export function CurvesSection() {
                     ? showPropCon
                     : item.label === 'Wellbore prop. mass'
                       ? showWellBorePropMass
-                      : showBreakdownZones
+                      : false
 
           const setChecked =
             item.label === 'Treating pressure'
@@ -93,7 +87,7 @@ export function CurvesSection() {
                     ? setShowPropCon
                     : item.label === 'Wellbore prop. mass'
                       ? setShowWellBorePropMass
-                      : setShowBreakdownZones
+                      : () => {}
 
           return (
             <label key={item.label} className="flex items-center gap-2 text-xs">
@@ -111,6 +105,40 @@ export function CurvesSection() {
             </label>
           )
         })}
+
+        <div className="bg-border my-2 h-px" />
+
+        <label className="flex items-center gap-2 text-xs">
+          <Checkbox
+            checked={breakdownMode === 'permeability'}
+            onCheckedChange={(value) =>
+              setBreakdownMode(value === true ? 'permeability' : null)
+            }
+          />
+          <span className="flex items-center gap-2">
+            <span
+              className="inline-block size-2 rounded-full"
+              style={{ background: '#f97316' }}
+            />
+            Breakdown zones (permeability)
+          </span>
+        </label>
+
+        <label className="flex items-center gap-2 text-xs">
+          <Checkbox
+            checked={breakdownMode === 'deltaV'}
+            onCheckedChange={(value) =>
+              setBreakdownMode(value === true ? 'deltaV' : null)
+            }
+          />
+          <span className="flex items-center gap-2">
+            <span
+              className="inline-block size-2 rounded-full"
+              style={{ background: '#a855f7' }}
+            />
+            Breakdown zones (deltaV)
+          </span>
+        </label>
       </div>
     </section>
   )

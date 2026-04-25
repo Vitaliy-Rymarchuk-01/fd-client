@@ -3,6 +3,7 @@ export interface StageSeriesResponseDTO {
   seconds: number[]
   treatingPressure: number[]
   slurryRate: number[]
+  cleanRate: number[]
   bottomHolePressure: number[]
   propCon: number[]
   bottomHolePropCon: number[]

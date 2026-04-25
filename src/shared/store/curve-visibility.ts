@@ -1,18 +1,20 @@
 import { create } from 'zustand'
 
+export type BreakdownMode = 'permeability' | 'deltaV'
+
 type CurveVisibilityState = {
   showTreatingPressure: boolean
   showBottomHolePressure: boolean
   showSlurryRate: boolean
   showPropCon: boolean
   showWellBorePropMass: boolean
-  showBreakdownZones: boolean
+  breakdownMode: BreakdownMode | null
   setShowTreatingPressure: (next: boolean) => void
   setShowBottomHolePressure: (next: boolean) => void
   setShowSlurryRate: (next: boolean) => void
   setShowPropCon: (next: boolean) => void
   setShowWellBorePropMass: (next: boolean) => void
-  setShowBreakdownZones: (next: boolean) => void
+  setBreakdownMode: (next: BreakdownMode | null) => void
 }
 
 export const useCurveVisibilityStore = create<CurveVisibilityState>((set) => ({
@@ -21,11 +23,11 @@ export const useCurveVisibilityStore = create<CurveVisibilityState>((set) => ({
   showSlurryRate: true,
   showPropCon: true,
   showWellBorePropMass: false,
-  showBreakdownZones: true,
+  breakdownMode: 'permeability',
   setShowTreatingPressure: (next) => set({ showTreatingPressure: next }),
   setShowBottomHolePressure: (next) => set({ showBottomHolePressure: next }),
   setShowSlurryRate: (next) => set({ showSlurryRate: next }),
   setShowPropCon: (next) => set({ showPropCon: next }),
   setShowWellBorePropMass: (next) => set({ showWellBorePropMass: next }),
-  setShowBreakdownZones: (next) => set({ showBreakdownZones: next }),
+  setBreakdownMode: (next) => set({ breakdownMode: next }),
 }))

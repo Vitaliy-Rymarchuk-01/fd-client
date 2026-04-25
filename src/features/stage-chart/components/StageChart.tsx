@@ -31,11 +31,9 @@ export function StageChart() {
   const showWellBorePropMass = useCurveVisibilityStore(
     (s) => s.showWellBorePropMass,
   )
-  const showBreakdownZones = useCurveVisibilityStore(
-    (s) => s.showBreakdownZones,
-  )
+  const breakdownMode = useCurveVisibilityStore((s) => s.breakdownMode)
 
-  const breakdownsQ = useBreakdowns(selectedStageId, q.data)
+  const breakdownsQ = useBreakdowns(selectedStageId, q.data, breakdownMode)
 
   const [hoverIndex, setHoverIndex] = useState<number | null>(null)
 
@@ -511,8 +509,10 @@ export function StageChart() {
                       showSlurryRate={showSlurryRate}
                       showPropCon={showPropCon}
                       showWellBorePropMass={showWellBorePropMass}
-                      showBreakdownZones={showBreakdownZones}
-                      breakdownZones={breakdownsQ.data?.zones ?? []}
+                      showBreakdownZones={Boolean(breakdownMode)}
+                      breakdownZones={
+                        breakdownMode ? (breakdownsQ.data?.zones ?? []) : []
+                      }
                       xScale={xScale}
                       pressureScale={pressureScale}
                       slurryScale={slurryScale}

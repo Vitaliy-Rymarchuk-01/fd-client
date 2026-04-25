@@ -26,6 +26,7 @@ function normalizeSeries(data: StageSeriesResponseDTO): StageSeriesResponseDTO {
     seconds: Array.isArray(data.seconds) ? data.seconds : [],
     treatingPressure: normalizeArr(data.treatingPressure),
     slurryRate: normalizeArr(data.slurryRate),
+    cleanRate: normalizeArr(data.cleanRate),
     bottomHolePressure: normalizeArr(data.bottomHolePressure),
     propCon: normalizeArr(data.propCon),
     bottomHolePropCon: normalizeArr(data.bottomHolePropCon),

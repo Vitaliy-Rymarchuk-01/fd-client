@@ -4,6 +4,7 @@ import { LogOut, User } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { clearAuthSession, useLogoutMutation } from '@/features/auth'
+import { setActiveProjectId } from '@/features/projects'
 
 import { Button } from '@/shared/components/ui/button'
 import {
@@ -15,6 +16,7 @@ import {
 import { Separator } from '@/shared/components/ui/separator'
 import { ThemeToggle } from '@/shared/components/ui/theme-toggle'
 import { APP_ROUTES } from '@/shared/config/routes'
+import { useStageSelectionStore } from '@/shared/store/stage-selection'
 
 export function AppHeader() {
   const navigate = useNavigate()
@@ -23,10 +25,14 @@ export function AppHeader() {
   const handleLogout = () => {
     logoutMutation.mutate(undefined, {
       onSuccess: () => {
+        setActiveProjectId(null)
+        useStageSelectionStore.getState().setSelectedStageId(null)
         clearAuthSession()
         navigate(APP_ROUTES.signIn, { replace: true })
       },
       onError: (error) => {
+        setActiveProjectId(null)
+        useStageSelectionStore.getState().setSelectedStageId(null)
         clearAuthSession()
         toast.error(error.message || 'Failed to log out')
         navigate(APP_ROUTES.signIn, { replace: true })
