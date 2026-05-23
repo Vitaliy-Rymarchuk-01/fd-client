@@ -1,6 +1,12 @@
-import { zodResolver } from '@hookform/resolvers/zod'
-import { useForm } from 'react-hook-form'
 import { useNavigate } from 'react-router'
+
+import { useForm } from 'react-hook-form'
+
+import { zodResolver } from '@hookform/resolvers/zod'
+
+import { toast } from 'sonner'
+
+import { setAccessToken } from '@/features/auth/store/session'
 
 import { Button } from '@/shared/components/ui/button'
 import { Input } from '@/shared/components/ui/input'
@@ -8,10 +14,11 @@ import { Label } from '@/shared/components/ui/label'
 import { APP_ROUTES } from '@/shared/config/routes'
 
 import { useSignInMutation } from '../hooks/use-sign-in-mutation'
-import { signInSchema, type SignInFormValues } from '../types/schema'
+import { type SignInFormValues, signInSchema } from '../types/schema'
 
 export function SignInForm() {
   const navigate = useNavigate()
+
   const signInMutation = useSignInMutation()
 
   const {
@@ -28,8 +35,12 @@ export function SignInForm() {
 
   const onSubmit = handleSubmit((values) => {
     signInMutation.mutate(values, {
-      onSuccess: () => {
+      onSuccess: (response) => {
+        setAccessToken(response.accessToken)
         navigate(APP_ROUTES.dashboard)
+      },
+      onError: (error) => {
+        toast.error(error.message || 'Failed to sign in')
       },
     })
   })
@@ -47,7 +58,7 @@ export function SignInForm() {
           {...register('email')}
         />
         {errors.email?.message ? (
-          <p className="text-sm text-destructive">{errors.email.message}</p>
+          <p className="text-destructive text-sm">{errors.email.message}</p>
         ) : null}
       </div>
 
@@ -62,15 +73,15 @@ export function SignInForm() {
           {...register('password')}
         />
         {errors.password?.message ? (
-          <p className="text-sm text-destructive">{errors.password.message}</p>
+          <p className="text-destructive text-sm">{errors.password.message}</p>
         ) : null}
       </div>
 
-      {signInMutation.error?.message ? (
-        <p className="text-sm text-destructive">{signInMutation.error.message}</p>
-      ) : null}
-
-      <Button className="w-full" type="submit" disabled={signInMutation.isPending}>
+      <Button
+        className="w-full"
+        type="submit"
+        disabled={signInMutation.isPending}
+      >
         Sign in
       </Button>
 

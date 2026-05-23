@@ -1,6 +1,12 @@
-import { zodResolver } from '@hookform/resolvers/zod'
-import { useForm } from 'react-hook-form'
 import { useNavigate } from 'react-router'
+
+import { useForm } from 'react-hook-form'
+
+import { zodResolver } from '@hookform/resolvers/zod'
+
+import { toast } from 'sonner'
+
+import { setAccessToken } from '@/features/auth/store/session'
 
 import { Button } from '@/shared/components/ui/button'
 import { Input } from '@/shared/components/ui/input'
@@ -8,7 +14,7 @@ import { Label } from '@/shared/components/ui/label'
 import { APP_ROUTES } from '@/shared/config/routes'
 
 import { useSignUpMutation } from '../hooks/use-sign-up-mutation'
-import { signUpSchema, type SignUpFormValues } from '../types/schema'
+import { type SignUpFormValues, signUpSchema } from '../types/schema'
 
 export function SignUpForm() {
   const navigate = useNavigate()
@@ -36,8 +42,16 @@ export function SignUpForm() {
         password: values.password,
       },
       {
-        onSuccess: () => {
+        onSuccess: (response) => {
+          setAccessToken(response.accessToken)
           navigate(APP_ROUTES.dashboard)
+        },
+        onError: (error) => {
+          const message =
+            error.code === 'USER_EMAIL_EXISTS'
+              ? error.error || 'User with this email already exists'
+              : error.message || 'Failed to sign up'
+          toast.error(message)
         },
       },
     )
@@ -56,7 +70,7 @@ export function SignUpForm() {
           {...register('name')}
         />
         {errors.name?.message ? (
-          <p className="text-sm text-destructive">{errors.name.message}</p>
+          <p className="text-destructive text-sm">{errors.name.message}</p>
         ) : null}
       </div>
 
@@ -71,7 +85,7 @@ export function SignUpForm() {
           {...register('email')}
         />
         {errors.email?.message ? (
-          <p className="text-sm text-destructive">{errors.email.message}</p>
+          <p className="text-destructive text-sm">{errors.email.message}</p>
         ) : null}
       </div>
 
@@ -86,7 +100,7 @@ export function SignUpForm() {
           {...register('password')}
         />
         {errors.password?.message ? (
-          <p className="text-sm text-destructive">{errors.password.message}</p>
+          <p className="text-destructive text-sm">{errors.password.message}</p>
         ) : null}
       </div>
 
@@ -101,15 +115,17 @@ export function SignUpForm() {
           {...register('confirmPassword')}
         />
         {errors.confirmPassword?.message ? (
-          <p className="text-sm text-destructive">{errors.confirmPassword.message}</p>
+          <p className="text-destructive text-sm">
+            {errors.confirmPassword.message}
+          </p>
         ) : null}
       </div>
 
-      {signUpMutation.error?.message ? (
-        <p className="text-sm text-destructive">{signUpMutation.error.message}</p>
-      ) : null}
-
-      <Button className="w-full" type="submit" disabled={signUpMutation.isPending}>
+      <Button
+        className="w-full"
+        type="submit"
+        disabled={signUpMutation.isPending}
+      >
         Create account
       </Button>
 
