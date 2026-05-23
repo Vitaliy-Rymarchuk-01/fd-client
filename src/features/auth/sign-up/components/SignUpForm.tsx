@@ -47,7 +47,11 @@ export function SignUpForm() {
           navigate(APP_ROUTES.dashboard)
         },
         onError: (error) => {
-          toast.error(error.message || 'Failed to sign up')
+          const message =
+            error.code === 'USER_EMAIL_EXISTS'
+              ? error.error || 'User with this email already exists'
+              : error.message || 'Failed to sign up'
+          toast.error(message)
         },
       },
     )

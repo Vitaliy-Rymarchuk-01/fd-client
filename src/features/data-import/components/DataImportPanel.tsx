@@ -7,7 +7,7 @@ import { cn } from '@/shared/lib/utils'
 
 import type { ImportFileItem } from '../types/file-import'
 
-const ACCEPTED_EXTENSIONS = ['.txt', '.csv', '.xlsx'] as const
+const ACCEPTED_EXTENSIONS = ['.txt', '.csv'] as const
 
 interface UploadProgressProps {
   items: ImportFileItem[]
