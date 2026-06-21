@@ -1,73 +1,73 @@
-# React + TypeScript + Vite
+# fd-client
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+SPA для візуалізації та аналізу даних свердловин при гідравлічному розриві пласта. Дозволяє завантажувати дані стадій буріння, переглядати часові ряди технологічних параметрів у вигляді інтерактивних графіків, а також отримувати результати виявлення зон потентційного тріщиноутворення.
 
-Currently, two official plugins are available:
+## Технології
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **React 19**
+- **TypeScript**
+- **Vite** — збірка
+- **TailwindCSS** — стилізація
+- **shadcn/ui** — UI компоненти
+- **React Query** — управління серверним станом
+- **Zustand** — управління клієнтським станом
+- **visx** — графіки та візуалізація даних
+- **React Hook Form + Zod** — форми та валідація
 
-## React Compiler
+## Архітектура
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```
+fd-client/src/
+├── app/              # Налаштування додатку, роутинг
+├── features/         # Функціональні модулі
+│   ├── auth/
+│   ├── breakdowns/
+│   ├── dashboard-sidebar/
+│   ├── data-import/
+│   ├── projects/
+│   ├── stage-chart/
+│   └── stage-series/
+├── pages/            # Сторінки
+│   ├── auth/
+│   └── dashboard/
+├── providers/        # React провайдери
+└── shared/           # Спільні компоненти та утиліти
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Функціонал
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+- **Авторизація** — вхід та реєстрація користувача
+- **Проєкти** — створення та управління проєктами свердловин
+- **Імпорт даних** — завантаження файлів зі стадіями
+- **Графіки стадій** — інтерактивна візуалізація даних свердловини
+- **Виявлення розривів** — відображення результатів аналізу
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## Локальний запуск
+
+### Вимоги
+
+- [Bun](https://bun.sh)
+
+### Змінні середовища
+
+Створи файл `.env` на основі:
+
+```env
+VITE_API_URL=http://localhost:3000
+```
+
+### Команди
+
+```bash
+# Встановити залежності
+bun install
+
+# Запуск в режимі розробки
+bun dev
+
+# Зібрати продакшн версію
+bun build
+
+# Перевірити зібрану версію локально
+bun preview
 ```
